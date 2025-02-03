@@ -50,7 +50,7 @@ export function createOrReturnExistingAgent(character: Character, db: any, cache
   return runtime;
 }
 
-export const startAgent = async (character: Character, directClient: DirectClient) => {
+export const startAgent = async (character: Character) => {
   try {
     character.id ??= stringToUuid(character.name);
     character.username ??= character.name;
@@ -76,8 +76,6 @@ export const startAgent = async (character: Character, directClient: DirectClien
 
     runtime.clients = await initializeClients(character, runtime);
 
-    directClient.registerAgent(runtime);
-
     // report to console
     elizaLogger.debug(`Started ${character.name} as ${runtime.agentId}`);
 
@@ -90,7 +88,7 @@ export const startAgent = async (character: Character, directClient: DirectClien
 };
 
 export const startAgents = async () => {
-  const serverPort = parseInt(settings.SERVER_PORT || '3000');
+  // const serverPort = parseInt(settings.SERVER_PORT || '3000');
 
   const charactersDB = await charactersModel.find({}).lean();
   const characters = await loadCharactersFromDB(charactersDB);
@@ -98,20 +96,21 @@ export const startAgents = async () => {
   try {
     for (const character of characters) {
       if ((character as any).status === 'on') {
-        await startAgent(character, global.directClient as DirectClient);
+        console.log(character.name);
+        await startAgent(character);
       }
     }
   } catch (error) {
     elizaLogger.error('Error starting agents:', error);
   }
 
-  // upload some agent functionality into directClient
-  global.directClient.startAgent = async (character: Character) => {
-    // wrap it so we don't have to inject directClient later
-    return startAgent(character, global.directClient);
-  };
+  // // upload some agent functionality into directClient
+  // global.directClient.startAgent = async (character: Character) => {
+  //   // wrap it so we don't have to inject directClient later
+  //   return startAgent(character, global.directClient);
+  // };
 
-  global.directClient.start(serverPort + 1);
+  // global.directClient.start(serverPort + 1);
 
   // elizaLogger.log("Chat started. Type 'exit' to quit.");
   // const chat = startChat(characters);

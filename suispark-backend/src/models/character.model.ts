@@ -3,7 +3,6 @@ import { Character } from '@elizaos/core';
 
 export interface CharacterExt extends Character {
   agentId: string;
-  accessEmail: string[];
   status: 'on' | 'off';
 }
 
@@ -19,19 +18,11 @@ const updatedCharacterSchema: Schema<CharacterExt> = new Schema(
       required: true,
       unique: true,
     },
-    accessEmail: {
-      type: [String],
-      default: [],
-    },
     status: {
       type: String,
       enum: ['on', 'off'],
     },
     name: {
-      type: String,
-      required: true,
-    },
-    username: {
       type: String,
       required: true,
     },
@@ -47,12 +38,12 @@ const updatedCharacterSchema: Schema<CharacterExt> = new Schema(
       type: String,
       required: true,
     },
-    settings: {
-      type: Object,
-    },
+    // settings: {
+    //   type: Object,
+    // },
     system: {
       type: String,
-      required: true,
+      required: false,
     },
     bio: {
       type: [String],
@@ -85,9 +76,6 @@ const updatedCharacterSchema: Schema<CharacterExt> = new Schema(
     adjectives: {
       type: [String],
       default: [],
-    },
-    twitterProfile: {
-      type: Object,
     },
     knowledge: {
       type: [String],

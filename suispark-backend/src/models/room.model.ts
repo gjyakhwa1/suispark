@@ -1,0 +1,41 @@
+import { Schema } from 'mongoose';
+
+interface Proposal {
+  abstract: string;
+  teamDetails: string;
+  timeLine: string;
+}
+export interface Room {
+  active: boolean;
+  proposal: Proposal;
+}
+
+const ProposalSchema: Schema<Proposal> = new Schema(
+  {
+    abstract: {
+      type: String,
+      required: true,
+    },
+    teamDetails: {
+      type: String,
+      required: true,
+    },
+    timeLine: {
+      type: String,
+      required: true,
+    },
+  },
+  { _id: false },
+);
+
+export const RoomSchema = new Schema<Room>({
+  active: {
+    type: Boolean,
+    required: true,
+    default: true,
+  },
+  proposal: {
+    type: ProposalSchema,
+    required: true,
+  },
+});

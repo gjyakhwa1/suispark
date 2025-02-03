@@ -19,6 +19,37 @@ import { Tweet } from 'agent-twitter-client';
 import charactersModel from '../models/character.model.js';
 
 export class AgentController {
+  public createAgent = async (req: Request, res: Response) => {
+    try {
+      const id = crypto.randomUUID();
+      const character = req.body;
+      if (!character) {
+        res.status(400).json({
+          error: 'Invalid request!',
+        });
+      }
+      let newCharacterData = null;
+
+      try {
+        newCharacterData = {
+          ...character,
+          id: id,
+          agentId: id,
+          status: 'on',
+          modelProvider: 'openai',
+        };
+        await charactersModel.create(newCharacterData);
+        res.status(200).json({ agents: newCharacterData, error: null });
+      } catch (error) {
+        res.status(200).json({ agents: [], error: 'Error creating agent ' + error.toString() });
+      }
+    } catch (e) {
+      res.status(500).json({
+        error: e.message,
+      });
+    }
+  };
+
   public getAllAgents = async (req: Request, res: Response) => {
     try {
       const agentsList = Array.from(global.agentsInMemory.values()).map((agent: AgentRuntime) => {
@@ -49,7 +80,6 @@ export class AgentController {
         //turn off
         if (agent) {
           agent.stop();
-          global.directClient.unregisterAgent(agent);
           global.agentsInMemory.delete(agentId);
         }
 
@@ -63,11 +93,10 @@ export class AgentController {
         // turn on
         if (agent) {
           agent.stop();
-          global.directClient.unregisterAgent(agent);
           global.agentsInMemory.delete(agentId);
         }
 
-        const agentRuntime = await startAgent(agentCharacter as any, global.directClient);
+        const agentRuntime = await startAgent(agentCharacter as any);
         global.agentsInMemory.set(agentId, agentRuntime);
         await charactersModel.findOneAndUpdate({ agentId }, { $set: { status: 'on' } });
         logger.info(`${agentCharacter.name} started`);
@@ -98,12 +127,11 @@ export class AgentController {
 
     try {
       agent.stop();
-      global.directClient.unregisterAgent(agent);
       global.agentsInMemory.delete(agentId);
 
       const newAgentCharacter = (await charactersModel.findOne({ agentId })).toObject();
 
-      const agentRuntime = await startAgent(newAgentCharacter as any, global.directClient);
+      const agentRuntime = await startAgent(newAgentCharacter as any);
       global.agentsInMemory.set(agentId, agentRuntime);
       logger.info(`${newAgentCharacter.name} started`);
 
@@ -139,7 +167,6 @@ export class AgentController {
 
     try {
       agent.stop();
-      global.directClient.unregisterAgent(agent);
       global.agentsInMemory.delete(agentId);
       logger.info(`${character.name} stopped and unregistered!`);
 
@@ -185,7 +212,7 @@ export class AgentController {
         },
       };
 
-      const agentRuntime = await startAgent(newAgentCharacter, global.directClient);
+      const agentRuntime = await startAgent(newAgentCharacter);
       global.agentsInMemory.set(agentId, agentRuntime);
       logger.info(`${newAgentCharacter.name} started`);
 

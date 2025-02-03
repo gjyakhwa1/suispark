@@ -8,7 +8,7 @@ export interface Routes {
 }
 
 export class AgentRoute implements Routes {
-  public path = '/api';
+  public path = '/api/agent';
   public router: Router;
   public agentController = new AgentController();
 
@@ -18,22 +18,22 @@ export class AgentRoute implements Routes {
   }
 
   private initializeRoutes() {
-    logger.debug('Route has been initialized!');
+    logger.debug('Agent Route has been initialized!');
 
-    this.router.get(`/`, (req, res) => {
+    this.router.get(`${this.path}`, (req, res) => {
       res.status(200).json({
         message: 'Hello World!',
       });
     });
-
+    this.router.post(`${this.path}/createAgent`, this.agentController.createAgent);
     this.router.get(`${this.path}/getAllAgents`, this.agentController.getAllAgents);
     this.router.post(`${this.path}/restartAgent`, this.agentController.restartAgent);
     this.router.post(`${this.path}/toggleAgent`, this.agentController.toggleAgent);
     this.router.post(`${this.path}/updateAgentCharacter`, this.agentController.updateAgentCharacter);
-    this.router.post(`${this.path}/generateTweet`, this.agentController.generateNewTweet);
-    this.router.post(`${this.path}/generateTweetOnReference`, this.agentController.generateTweetOnReference);
-    this.router.post(`${this.path}/postTweet`, this.agentController.postTweet);
-    this.router.post(`${this.path}/replyTweet`, this.agentController.replyTweet);
-    this.router.post(`${this.path}/quoteTweet`, this.agentController.quoteTweet);
+    // this.router.post(`${this.path}/generateTweet`, this.agentController.generateNewTweet);
+    // this.router.post(`${this.path}/generateTweetOnReference`, this.agentController.generateTweetOnReference);
+    // this.router.post(`${this.path}/postTweet`, this.agentController.postTweet);
+    // this.router.post(`${this.path}/replyTweet`, this.agentController.replyTweet);
+    // this.router.post(`${this.path}/quoteTweet`, this.agentController.quoteTweet);
   }
 }

@@ -1,7 +1,7 @@
 import React from "react";
 import { Menu, Plus, LogOut } from "lucide-react";
 import { useRoomStore } from "../../store/roomStore";
-import { useAuthStore } from "../../store/authStore";
+import { useLogin } from "../../context/UserContext";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -15,7 +15,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onNewRoom,
 }) => {
   const { rooms, currentRoom, setCurrentRoom } = useRoomStore();
-  const logout = useAuthStore((state) => state.logout);
+  const { logOut } = useLogin();
 
   return (
     <>
@@ -66,7 +66,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </nav>
 
             <button
-              onClick={logout}
+              onClick={logOut}
               className="absolute bottom-4 left-0 w-full p-4 hover:bg-gray-800 flex items-center justify-center space-x-2"
             >
               <LogOut size={20} />

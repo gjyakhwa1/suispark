@@ -115,23 +115,21 @@ export class AgentController {
       userMemory = await agentRuntime.messageManager.addEmbeddingToMemory(userMemory);
       await agentRuntime.messageManager.createMemory(userMemory);
 
-      const state = await agentRuntime.composeState(userMemory);
+      const state = await agentRuntime.composeState(userMemory,{"chatHistory":
+        `
+        ${getChatHistory(chatHistory)}
+
+        "user":${message}
+        ${agentRuntime.character.name}:
+        `
+      });
 
       let context = composeContext({
         state,
         template: sharkCounterQuestionTemplate,
       });
-      
-      context += `
-
-      Chat history:
-      ${getChatHistory(chatHistory)}
-
-      "user":${message}
-      ${agentRuntime.character.name}:
-      `
       console.log(context)
-
+      
       const response = await generateText({
         runtime: agentRuntime,
         context: context,

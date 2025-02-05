@@ -98,6 +98,9 @@ You are a shark in a high-stakes Shark Tank. You have a strong personality, deep
 3. The conversation history is sorted from the earliest message to the latest—use this context to formulate meaningful questions.
 4. Only respond to questions, do not provide unsolicited information.
 5. Ask question only specific to your field of knowledge.
+
+Chat History:
+{{chatHistory}}
 `
 
 export const sharkEvaluationTemplate = 

@@ -192,7 +192,7 @@ export class AgentController {
 
   public getRoomChatHistory = async (req: Request, res: Response) => {
     try {
-      const roomId = req.body.roomId;
+      const roomId = req.params.roomId as `${string}-${string}-${string}-${string}-${string}`;
 
       if (!roomId) {
         res.status(400).json({
@@ -200,8 +200,8 @@ export class AgentController {
         });
         return;
       }
-      const chatHistory = this.getRoomHistory(roomId);
-      ``;
+      const chatHistory = await this.getRoomHistory(roomId);
+      console.log(chatHistory)
       res.json({
         messages: chatHistory,
         error: null,
@@ -213,7 +213,7 @@ export class AgentController {
 
   public getProposalDecision = async (req: Request, res: Response) => {
     try {
-      const roomId = req.body.roomId;
+      const roomId = req.params.roomId as `${string}-${string}-${string}-${string}-${string}`
 
       if (!roomId) {
         res.status(400).json({
@@ -260,7 +260,7 @@ export class AgentController {
         }
         return false;
       };
-      const chatHistory = this.getRoomHistory(roomId);
+      const chatHistory = await this.getRoomHistory(roomId);
 
       const agents = Array.from(global.agentsInMemory.values()).filter((agent: AgentRuntime) => agent.character.name !== ORCHESTRATOR_NAME);
       const decisions = await Promise.all(agents.map(getDecisionFromAgent));

@@ -2,25 +2,15 @@ import {
   AgentRuntime,
   composeContext,
   Content,
-  DatabaseAdapter,
-  elizaLogger,
-  generateMessageResponse,
   generateText,
   Memory,
   ModelClass,
-  stringToUuid,
-  trimTokens,
 } from '@elizaos/core';
 import { Request, Response } from 'express';
 import { logger } from '../utils/logger.js';
 import { startAgent } from '../agent/agent.js';
-import { createTweetObject, handleNoteTweet, processAndCacheTweet, sendQuoteTweet, sendStandardTweet } from '../services/twitter.service.js';
-import { twitterMessageHandlerTemplate, twitterPostTemplate, sharkCounterQuestionTemplate, sharkEvaluationTemplate } from '../agent/constant.js';
-import { DEFAULT_MAX_TWEET_LENGTH, validateTwitterConfig } from '../agent/environment.js';
-import { ClientBase } from '../agent/base.js';
-import { Tweet } from 'agent-twitter-client';
+import { sharkCounterQuestionTemplate, sharkEvaluationTemplate } from '../agent/constant.js';
 import charactersModel from '../models/character.model.js';
-import { SqliteDatabaseAdapter } from '@elizaos/adapter-sqlite';
 
 export class AgentController {
   public createAgent = async (req: Request, res: Response) => {

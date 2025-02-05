@@ -1,16 +1,11 @@
-import {
-  AgentRuntime,
-  composeContext,
-  Content,
-  generateText,
-  Memory,
-  ModelClass,
-} from '@elizaos/core';
+import { AgentRuntime, composeContext, Content, generateText, Memory, ModelClass } from '@elizaos/core';
 import { Request, Response } from 'express';
 import { logger } from '../utils/logger.js';
 import { startAgent } from '../agent/agent.js';
 import { sharkCounterQuestionTemplate, sharkEvaluationTemplate } from '../agent/constant.js';
 import charactersModel from '../models/character.model.js';
+import usersModel from '../models/user.model.js';
+import { NUMBER_OF_ROUND, ORCHESTRATOR_NAME } from '../constant.js';
 
 export class AgentController {
   public createAgent = async (req: Request, res: Response) => {
@@ -67,7 +62,7 @@ export class AgentController {
     try {
       const selectRandomAgent = (): AgentRuntime => {
         const agentIds = Array.from(global.agentsInMemory.values())
-          .filter((agent: AgentRuntime) => agent.character.name !== 'RoomManager')
+          .filter((agent: AgentRuntime) => agent.character.name !== ORCHESTRATOR_NAME)
           .map((agent: AgentRuntime) => {
             return agent.agentId;
           });
@@ -82,7 +77,7 @@ export class AgentController {
         chatHistory.reduce((acc, message) => acc + `${message.content.source}:${message.content.text}\n\n`, '');
 
       const checkForCompletion = (chatHistoryLength: number): boolean => {
-        if (chatHistoryLength >= 8) {
+        if (chatHistoryLength >= NUMBER_OF_ROUND) {
           return true;
         }
         return false;
@@ -100,7 +95,7 @@ export class AgentController {
 
       //binding roomManager runtime to roomId to acces all the memory in the room
       const roomManagerRuntime = Array.from(global.agentsInMemory.values()).filter(
-        (agent: AgentRuntime) => agent.character.name === 'RoomManager',
+        (agent: AgentRuntime) => agent.character.name === ORCHESTRATOR_NAME,
       )[0] as AgentRuntime;
       await global.db.addParticipant(roomManagerRuntime.agentId, roomId);
 
@@ -188,7 +183,7 @@ export class AgentController {
 
   private getRoomHistory = async (roomId: `${string}-${string}-${string}-${string}-${string}`) => {
     const roomManagerRuntime = Array.from(global.agentsInMemory.values()).filter(
-      (agent: AgentRuntime) => agent.character.name === 'RoomManager',
+      (agent: AgentRuntime) => agent.character.name === ORCHESTRATOR_NAME,
     )[0] as AgentRuntime;
     await global.db.addParticipant(roomManagerRuntime.agentId, roomId);
 
@@ -268,11 +263,13 @@ export class AgentController {
       };
       const chatHistory = this.getRoomHistory(roomId);
 
-      const agents = Array.from(global.agentsInMemory.values()).filter((agent: AgentRuntime) => agent.character.name !== 'RoomManager');
+      const agents = Array.from(global.agentsInMemory.values()).filter((agent: AgentRuntime) => agent.character.name !== ORCHESTRATOR_NAME);
       const decisions = await Promise.all(agents.map(getDecisionFromAgent));
       console.log(decisions);
       const finalDecision = checkDecisions(decisions);
       console.log(finalDecision);
+
+      await usersModel.updateOne({ 'rooms.id': roomId }, { $set: { 'rooms.$.active': false, 'rooms.$.funded': finalDecision } });
 
       res.json({
         decision: finalDecision,

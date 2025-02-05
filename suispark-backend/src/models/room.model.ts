@@ -8,6 +8,7 @@ interface Proposal {
 export interface Room {
   id: string;
   active: boolean;
+  funded: boolean;
   proposal: Proposal;
 }
 
@@ -40,6 +41,11 @@ export const RoomSchema = new Schema<Room>(
       type: Boolean,
       required: true,
       default: true,
+    },
+    funded: {
+      type: Boolean,
+      required: true,
+      default: false,
     },
     proposal: {
       type: ProposalSchema,

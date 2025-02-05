@@ -150,7 +150,6 @@ export class AgentController {
         state,
         template: sharkCounterQuestionTemplate,
       });
-      console.log(context);
       const response = await generateText({
         runtime: agentRuntime,
         context: context,
@@ -265,9 +264,7 @@ export class AgentController {
 
       const agents = Array.from(global.agentsInMemory.values()).filter((agent: AgentRuntime) => agent.character.name !== ORCHESTRATOR_NAME);
       const decisions = await Promise.all(agents.map(getDecisionFromAgent));
-      console.log(decisions);
       const finalDecision = checkDecisions(decisions);
-      console.log(finalDecision);
 
       await usersModel.updateOne({ 'rooms.id': roomId }, { $set: { 'rooms.$.active': false, 'rooms.$.funded': finalDecision } });
 

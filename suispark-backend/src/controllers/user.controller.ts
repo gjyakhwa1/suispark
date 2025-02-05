@@ -36,14 +36,14 @@ export class UserController {
 
   public createRoom = async (req: Request, res: Response) => {
     try {
-      const roomDetails = req.body;
-      if (!roomDetails) {
+      const { walletAddress, abstract, teamDetails } = req.body;
+
+      if (!walletAddress || !abstract || !teamDetails) {
         res.status(400).json({
-          error: 'Invalid request!',
+          error: 'Invalid request!. Please include walletAddress, abstract and teamDetails',
         });
         return;
       }
-      const walletAddress = roomDetails.walletAddress;
       const existingUser = await usersModel.findOne({ walletAddress });
 
       if (!existingUser) {
@@ -69,7 +69,7 @@ export class UserController {
 
       const roomId = await db.createRoom();
       try {
-        const { walletAddress, ...roomParams } = roomDetails;
+        const roomParams = { abstract, teamDetails };
         newRoom = {
           proposal: roomParams,
           id: roomId,

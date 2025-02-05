@@ -160,6 +160,11 @@ export class AgentController {
       res.status(200).json({ message: '', error: 'Error chatting orchestrator ' + error.toString() });
     }
   };
+
+  public getProposalDecision = async (req:Request, res:Response)=>{
+    return
+  }
+
   public toggleAgent = async (req: Request, res: Response) => {
     const agentId = req.body.agentId;
 

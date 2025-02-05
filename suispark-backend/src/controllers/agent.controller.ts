@@ -17,6 +17,9 @@ import { DEFAULT_MAX_TWEET_LENGTH, validateTwitterConfig } from '../agent/enviro
 import { ClientBase } from '../agent/base.js';
 import { Tweet } from 'agent-twitter-client';
 import charactersModel from '../models/character.model.js';
+import path from 'path';
+import fs from 'fs';
+import { initializeDatabase } from 'agent/database.js';
 
 export class AgentController {
   public createAgent = async (req: Request, res: Response) => {
@@ -69,6 +72,49 @@ export class AgentController {
     }
   };
 
+  public chatOrchestrator = async (req: Request, res: Response) => {
+    try {
+      const message = req.body.message;
+      const roomId = req.body.roomId;
+
+      const selectRandomAgent = (): AgentRuntime => {
+        const agentIds = Array.from(global.agentsInMemory.values())
+          .filter((agent: AgentRuntime) => agent.character.name !== 'Orchestrator')
+          .map((agent: AgentRuntime) => {
+            return agent.agentId;
+          });
+        const noOfAgents = agentIds.length;
+        const randomIndex = Math.floor(Math.random() * noOfAgents);
+        const agentId = agentIds[randomIndex];
+        const agentRuntime = global.agentsInMemory.get(agentId);
+        return agentRuntime;
+      };
+
+      if (!message || !roomId) {
+        res.status(400).json({
+          error: 'Invalid Request.',
+        });
+        return;
+      }
+      const agentRuntime = selectRandomAgent();
+
+      await global.db.addParticipant(agentRuntime.agentId, roomId);
+
+      const response = await generateText({
+        runtime: agentRuntime,
+        context: `You are shark in a shark. Question to the message Accordingly. Only ask one question based on your expertise , ${message}`,
+        modelClass: ModelClass.SMALL,
+      });
+      console.log(response);
+      res.json({
+        message: response,
+        agent: agentRuntime.character.name,
+        error: null,
+      });
+    } catch (error) {
+      res.status(200).json({ message: '', error: 'Error chatting orchestrator ' + error.toString() });
+    }
+  };
   public toggleAgent = async (req: Request, res: Response) => {
     const agentId = req.body.agentId;
 

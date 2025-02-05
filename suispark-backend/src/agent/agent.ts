@@ -1,5 +1,5 @@
 import { DirectClient } from '@elizaos/client-direct';
-import { AgentRuntime, elizaLogger, settings, stringToUuid, type Character } from '@elizaos/core';
+import { Action, AgentRuntime, elizaLogger, IAgentRuntime, Memory, settings, stringToUuid, type Character } from '@elizaos/core';
 import { bootstrapPlugin } from '@elizaos/plugin-bootstrap';
 import { createNodePlugin } from '@elizaos/plugin-node';
 import { solanaPlugin } from '@elizaos/plugin-solana';
@@ -16,6 +16,7 @@ const __filename = fileURLToPath(import.meta.url);
 global.__dirname = path.dirname(__filename);
 global.agentsInMemory = new Map<string, AgentRuntime>();
 global.directClient = new DirectClient();
+global.db = null;
 
 let nodePlugin: any | undefined;
 
@@ -55,6 +56,7 @@ export const startAgent = async (character: Character) => {
     character.id ??= stringToUuid(character.name);
     character.username ??= character.name;
 
+    console.log(`Starting Agent ${character.name}`);
     const token = getTokenForProvider(character.modelProvider, character);
     const dataDir = path.join(global.__dirname, '../data');
 
@@ -62,16 +64,17 @@ export const startAgent = async (character: Character) => {
       fs.mkdirSync(dataDir, { recursive: true });
     }
 
-    const db = initializeDatabase(dataDir);
+    global.db = initializeDatabase(dataDir);
 
-    await db.init();
+    await global.db.init();
 
-    const cache = initializeDbCache(character, db);
-    createOrReturnExistingAgent(character, db, cache, token);
+    const cache = initializeDbCache(character, global.db);
+    createOrReturnExistingAgent(character, global.db, cache, token);
 
     const agentId = (character as any).agentId;
     const runtime: AgentRuntime = global.agentsInMemory.get(agentId);
 
+    console.log(runtime);
     await runtime.initialize();
 
     runtime.clients = await initializeClients(character, runtime);
@@ -88,10 +91,9 @@ export const startAgent = async (character: Character) => {
 };
 
 export const startAgents = async () => {
-  // const serverPort = parseInt(settings.SERVER_PORT || '3000');
-
   const charactersDB = await charactersModel.find({}).lean();
   const characters = await loadCharactersFromDB(charactersDB);
+  //loading orchestrator character from the file
 
   try {
     for (const character of characters) {

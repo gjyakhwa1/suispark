@@ -6,6 +6,7 @@ interface Proposal {
   timeLine: string;
 }
 export interface Room {
+  id: string;
   active: boolean;
   proposal: Proposal;
 }
@@ -28,14 +29,22 @@ const ProposalSchema: Schema<Proposal> = new Schema(
   { _id: false },
 );
 
-export const RoomSchema = new Schema<Room>({
-  active: {
-    type: Boolean,
-    required: true,
-    default: true,
+export const RoomSchema = new Schema<Room>(
+  {
+    id: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    active: {
+      type: Boolean,
+      required: true,
+      default: true,
+    },
+    proposal: {
+      type: ProposalSchema,
+      required: true,
+    },
   },
-  proposal: {
-    type: ProposalSchema,
-    required: true,
-  },
-});
+  { _id: false },
+);

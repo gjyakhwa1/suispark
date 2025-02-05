@@ -30,6 +30,7 @@ export class AgentRoute implements Routes {
     this.router.post(`${this.path}/restartAgent`, this.agentController.restartAgent);
     this.router.post(`${this.path}/toggleAgent`, this.agentController.toggleAgent);
     this.router.post(`${this.path}/updateAgentCharacter`, this.agentController.updateAgentCharacter);
+    this.router.post(`${this.path}/chat`, this.agentController.chatOrchestrator);
     // this.router.post(`${this.path}/generateTweet`, this.agentController.generateNewTweet);
     // this.router.post(`${this.path}/generateTweetOnReference`, this.agentController.generateTweetOnReference);
     // this.router.post(`${this.path}/postTweet`, this.agentController.postTweet);

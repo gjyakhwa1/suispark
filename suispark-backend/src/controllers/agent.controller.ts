@@ -1,9 +1,11 @@
 import {
   AgentRuntime,
   composeContext,
+  Content,
   elizaLogger,
   generateMessageResponse,
   generateText,
+  Memory,
   ModelClass,
   stringToUuid,
   trimTokens,
@@ -12,14 +14,11 @@ import { Request, Response } from 'express';
 import { logger } from '../utils/logger.js';
 import { startAgent } from '../agent/agent.js';
 import { createTweetObject, handleNoteTweet, processAndCacheTweet, sendQuoteTweet, sendStandardTweet } from '../services/twitter.service.js';
-import { twitterMessageHandlerTemplate, twitterPostTemplate } from '../agent/constant.js';
+import { twitterMessageHandlerTemplate, twitterPostTemplate, sharkCounterQuestionTemplate } from '../agent/constant.js';
 import { DEFAULT_MAX_TWEET_LENGTH, validateTwitterConfig } from '../agent/environment.js';
 import { ClientBase } from '../agent/base.js';
 import { Tweet } from 'agent-twitter-client';
 import charactersModel from '../models/character.model.js';
-import path from 'path';
-import fs from 'fs';
-import { initializeDatabase } from 'agent/database.js';
 
 export class AgentController {
   public createAgent = async (req: Request, res: Response) => {
@@ -77,12 +76,17 @@ export class AgentController {
       const message = req.body.message;
       const roomId = req.body.roomId;
 
+      if (!message || !roomId) {
+        res.status(400).json({
+          error: 'Invalid Request.',
+        });
+        return;
+      }
+
       const selectRandomAgent = (): AgentRuntime => {
-        const agentIds = Array.from(global.agentsInMemory.values())
-          .filter((agent: AgentRuntime) => agent.character.name !== 'Orchestrator')
-          .map((agent: AgentRuntime) => {
-            return agent.agentId;
-          });
+        const agentIds = Array.from(global.agentsInMemory.values()).map((agent: AgentRuntime) => {
+          return agent.agentId;
+        });
         const noOfAgents = agentIds.length;
         const randomIndex = Math.floor(Math.random() * noOfAgents);
         const agentId = agentIds[randomIndex];
@@ -90,22 +94,63 @@ export class AgentController {
         return agentRuntime;
       };
 
-      if (!message || !roomId) {
-        res.status(400).json({
-          error: 'Invalid Request.',
-        });
-        return;
-      }
+      const getChatHistory = (chatHistory: Memory[]) =>
+        chatHistory.reduce((acc, message) => acc + `${message.content.source}:${message.content.text}\n\n`, '');
+
       const agentRuntime = selectRandomAgent();
+      const chatHistory = await agentRuntime.messageManager.getMemoriesByRoomIds({ roomIds: [roomId] });
+      console.log("Length",chatHistory.length);
+
 
       await global.db.addParticipant(agentRuntime.agentId, roomId);
+      let userMemory: Memory = {
+        userId: agentRuntime.agentId,
+        agentId: agentRuntime.agentId,
+        roomId: roomId,
+        content: {
+          source: 'user',
+          text: message,
+        } as Content,
+      };
+      userMemory = await agentRuntime.messageManager.addEmbeddingToMemory(userMemory);
+      await agentRuntime.messageManager.createMemory(userMemory);
+
+      const state = await agentRuntime.composeState(userMemory);
+
+      let context = composeContext({
+        state,
+        template: sharkCounterQuestionTemplate,
+      });
+      
+      context += `
+
+      Chat history:
+      ${getChatHistory(chatHistory)}
+
+      "user":${message}
+      ${agentRuntime.character.name}:
+      `
+      console.log(context)
 
       const response = await generateText({
         runtime: agentRuntime,
-        context: `You are shark in a shark. Question to the message Accordingly. Only ask one question based on your expertise , ${message}`,
+        context: context,
         modelClass: ModelClass.SMALL,
       });
-      console.log(response);
+
+      let newMemory = {
+        userId: agentRuntime.agentId,
+        agentId: agentRuntime.agentId,
+        roomId: roomId,
+        content: {
+          source: agentRuntime.character.name,
+          text: response,
+        } as Content,
+      };
+
+      newMemory = await agentRuntime.messageManager.addEmbeddingToMemory(newMemory);
+      await agentRuntime.messageManager.createMemory(newMemory);
+
       res.json({
         message: response,
         agent: agentRuntime.character.name,

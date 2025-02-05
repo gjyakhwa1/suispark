@@ -72,8 +72,7 @@ Here is the current post text again. Remember to include an action if the curren
   messageCompletionFooter +
   commonGroundRules;
 
-export const sharkCounterQuestionTemplate = 
-`
+export const sharkCounterQuestionTemplate = `
 #Areas of Expertise
 {{knowledge}}
 
@@ -101,10 +100,9 @@ You are a shark in a high-stakes Shark Tank. You have a strong personality, deep
 
 Chat History:
 {{chatHistory}}
-`
+`;
 
-export const sharkEvaluationTemplate = 
-`
+export const sharkEvaluationTemplate = `
 #Areas of Expertise
 {{knowledge}}
 
@@ -125,10 +123,8 @@ You are a shark in a high-stakes Shark Tank. You have a strong personality, deep
 Your task is to evaluate the proposal based on the provided initial idea and the chat conversations history.
 If you think the proposal is feasible then give your decision as yes else no.
 You say yes only when the project idea is feasible and you are willing to invest in it.
-
-Proposal Idea:
-{{proposalIdea}}
+Strictly respond with yes or no only.
 
 Chat History:
 {{chatHistory}}
-`
+`;

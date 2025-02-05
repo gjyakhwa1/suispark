@@ -67,7 +67,6 @@ export const startAgent = async (character: Character) => {
     global.db = initializeDatabase(dataDir);
 
     await global.db.init();
-
     const cache = initializeDbCache(character, global.db);
     createOrReturnExistingAgent(character, global.db, cache, token);
 
@@ -93,6 +92,7 @@ export const startAgent = async (character: Character) => {
 export const startAgents = async () => {
   const charactersDB = await charactersModel.find({}).lean();
   const characters = await loadCharactersFromDB(charactersDB);
+
   //loading orchestrator character from the file
 
   try {

@@ -2,6 +2,7 @@ import {
   AgentRuntime,
   composeContext,
   Content,
+  DatabaseAdapter,
   elizaLogger,
   generateMessageResponse,
   generateText,
@@ -14,11 +15,12 @@ import { Request, Response } from 'express';
 import { logger } from '../utils/logger.js';
 import { startAgent } from '../agent/agent.js';
 import { createTweetObject, handleNoteTweet, processAndCacheTweet, sendQuoteTweet, sendStandardTweet } from '../services/twitter.service.js';
-import { twitterMessageHandlerTemplate, twitterPostTemplate, sharkCounterQuestionTemplate } from '../agent/constant.js';
+import { twitterMessageHandlerTemplate, twitterPostTemplate, sharkCounterQuestionTemplate, sharkEvaluationTemplate } from '../agent/constant.js';
 import { DEFAULT_MAX_TWEET_LENGTH, validateTwitterConfig } from '../agent/environment.js';
 import { ClientBase } from '../agent/base.js';
 import { Tweet } from 'agent-twitter-client';
 import charactersModel from '../models/character.model.js';
+import { SqliteDatabaseAdapter } from '@elizaos/adapter-sqlite';
 
 export class AgentController {
   public createAgent = async (req: Request, res: Response) => {
@@ -73,20 +75,12 @@ export class AgentController {
 
   public chatOrchestrator = async (req: Request, res: Response) => {
     try {
-      const message = req.body.message;
-      const roomId = req.body.roomId;
-
-      if (!message || !roomId) {
-        res.status(400).json({
-          error: 'Invalid Request.',
-        });
-        return;
-      }
-
       const selectRandomAgent = (): AgentRuntime => {
-        const agentIds = Array.from(global.agentsInMemory.values()).map((agent: AgentRuntime) => {
-          return agent.agentId;
-        });
+        const agentIds = Array.from(global.agentsInMemory.values())
+          .filter((agent: AgentRuntime) => agent.character.name !== 'RoomManager')
+          .map((agent: AgentRuntime) => {
+            return agent.agentId;
+          });
         const noOfAgents = agentIds.length;
         const randomIndex = Math.floor(Math.random() * noOfAgents);
         const agentId = agentIds[randomIndex];
@@ -97,13 +91,59 @@ export class AgentController {
       const getChatHistory = (chatHistory: Memory[]) =>
         chatHistory.reduce((acc, message) => acc + `${message.content.source}:${message.content.text}\n\n`, '');
 
+      const checkForCompletion = (chatHistoryLength: number): boolean => {
+        if (chatHistoryLength >= 8) {
+          return true;
+        }
+        return false;
+      };
+
+      const message = req.body.message;
+      const roomId = req.body.roomId;
+
+      if (!message || !roomId) {
+        res.status(400).json({
+          error: 'Invalid Request.',
+        });
+        return;
+      }
+
+      //binding roomManager runtime to roomId to acces all the memory in the room
+      const roomManagerRuntime = Array.from(global.agentsInMemory.values()).filter(
+        (agent: AgentRuntime) => agent.character.name === 'RoomManager',
+      )[0] as AgentRuntime;
+      await global.db.addParticipant(roomManagerRuntime.agentId, roomId);
+
       const agentRuntime = selectRandomAgent();
-      const chatHistory = await agentRuntime.messageManager.getMemoriesByRoomIds({ roomIds: [roomId] });
-      console.log("Length",chatHistory.length);
 
+      const chatHistory = await roomManagerRuntime.messageManager.getMemoriesByRoomIds({ roomIds: [roomId] });
 
-      await global.db.addParticipant(agentRuntime.agentId, roomId);
-      let userMemory: Memory = {
+      const chatHistoryLength = chatHistory.length;
+
+      //save user qeuery to roomManager Memory
+      let userQueryMemory = {
+        userId: roomManagerRuntime.agentId,
+        agentId: roomManagerRuntime.agentId,
+        roomId: roomId,
+        content: {
+          source: 'user',
+          text: message,
+        } as Content,
+      };
+      userQueryMemory = await roomManagerRuntime.messageManager.addEmbeddingToMemory(userQueryMemory);
+      await roomManagerRuntime.messageManager.createMemory(userQueryMemory);
+
+      if (checkForCompletion(chatHistoryLength)) {
+        res.json({
+          message: '',
+          agent: '',
+          roundFinished: true,
+          error: null,
+        });
+        return;
+      }
+
+      let queryMemory: Memory = {
         userId: agentRuntime.agentId,
         agentId: agentRuntime.agentId,
         roomId: roomId,
@@ -112,56 +152,144 @@ export class AgentController {
           text: message,
         } as Content,
       };
-      userMemory = await agentRuntime.messageManager.addEmbeddingToMemory(userMemory);
-      await agentRuntime.messageManager.createMemory(userMemory);
-
-      const state = await agentRuntime.composeState(userMemory,{"chatHistory":
-        `
+      const state = await agentRuntime.composeState(queryMemory, {
+        chatHistory: `
         ${getChatHistory(chatHistory)}
 
         "user":${message}
         ${agentRuntime.character.name}:
-        `
+        `,
       });
 
       let context = composeContext({
         state,
         template: sharkCounterQuestionTemplate,
       });
-      console.log(context)
-      
+      console.log(context);
       const response = await generateText({
         runtime: agentRuntime,
         context: context,
         modelClass: ModelClass.SMALL,
       });
 
-      let newMemory = {
-        userId: agentRuntime.agentId,
-        agentId: agentRuntime.agentId,
+      //save agent response to roomManager Memory
+      let agentResponseMemory = {
+        userId: roomManagerRuntime.agentId,
+        agentId: roomManagerRuntime.agentId,
         roomId: roomId,
         content: {
           source: agentRuntime.character.name,
           text: response,
         } as Content,
       };
-
-      newMemory = await agentRuntime.messageManager.addEmbeddingToMemory(newMemory);
-      await agentRuntime.messageManager.createMemory(newMemory);
+      agentResponseMemory = await roomManagerRuntime.messageManager.addEmbeddingToMemory(agentResponseMemory);
+      await roomManagerRuntime.messageManager.createMemory(agentResponseMemory);
 
       res.json({
         message: response,
         agent: agentRuntime.character.name,
+        roundFinished: false,
         error: null,
       });
     } catch (error) {
       res.status(200).json({ message: '', error: 'Error chatting orchestrator ' + error.toString() });
     }
   };
+  private getRoomHistory = async (roomId: `${string}-${string}-${string}-${string}-${string}`) => {
+    const roomManagerRuntime = Array.from(global.agentsInMemory.values()).filter(
+      (agent: AgentRuntime) => agent.character.name === 'RoomManager',
+    )[0] as AgentRuntime;
+    await global.db.addParticipant(roomManagerRuntime.agentId, roomId);
 
-  public getProposalDecision = async (req:Request, res:Response)=>{
-    return
-  }
+    const chatHistory = (await roomManagerRuntime.messageManager.getMemoriesByRoomIds({ roomIds: [roomId] })).map(chat => chat.content);
+    return chatHistory;
+  };
+
+  public getRoomChatHistory = async (req: Request, res: Response) => {
+    try {
+      const roomId = req.body.roomId;
+
+      if (!roomId) {
+        res.status(400).json({
+          error: 'Invalid Request.',
+        });
+        return;
+      }
+      const chatHistory = this.getRoomHistory(roomId);
+      ``;
+      res.json({
+        messages: chatHistory,
+        error: null,
+      });
+    } catch (error) {
+      res.status(200).json({ message: '', error: 'Error chatting orchestrator ' + error.toString() });
+    }
+  };
+  public getProposalDecision = async (req: Request, res: Response) => {
+    try {
+      const roomId = req.body.roomId;
+
+      if (!roomId) {
+        res.status(400).json({
+          error: 'Invalid Request.',
+        });
+        return;
+      }
+
+      const getDecisionFromAgent = async (agentRuntime: AgentRuntime) => {
+        let queryMemory: Memory = {
+          userId: agentRuntime.agentId,
+          agentId: agentRuntime.agentId,
+          roomId: roomId,
+          content: {
+            source: '',
+            text: '',
+          } as Content,
+        };
+        const state = await agentRuntime.composeState(queryMemory, {
+          chatHistory,
+        });
+
+        let context = composeContext({
+          state,
+          template: sharkEvaluationTemplate,
+        });
+        const response = await generateText({
+          runtime: agentRuntime,
+          context: context,
+          modelClass: ModelClass.SMALL,
+        });
+        console.log(agentRuntime.character.name, response);
+        if (response.toLowerCase().includes('yes')) {
+          return true;
+        }
+        return false;
+      };
+
+      const checkDecisions = (decisions: boolean[]): boolean => {
+        const numberOfTrueValues = decisions.filter(decision => decision).length;
+        const numberOfFalseValues = decisions.filter(decision => !decision).length;
+        if (numberOfTrueValues > numberOfFalseValues) {
+          return true;
+        }
+        return false;
+      };
+      const chatHistory = this.getRoomHistory(roomId);
+
+      const agents = Array.from(global.agentsInMemory.values()).filter((agent: AgentRuntime) => agent.character.name !== 'RoomManager');
+      const decisions = await Promise.all(agents.map(getDecisionFromAgent));
+      console.log(decisions);
+      const finalDecision = checkDecisions(decisions);
+      console.log(finalDecision);
+
+      res.json({
+        decision: finalDecision,
+        error: null,
+      });
+    } catch (error) {
+      res.status(200).json({ message: '', error: 'Error chatting orchestrator ' + error.toString() });
+    }
+  };
 
   public toggleAgent = async (req: Request, res: Response) => {
     const agentId = req.body.agentId;

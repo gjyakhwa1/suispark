@@ -1,5 +1,5 @@
 import { DirectClient } from '@elizaos/client-direct';
-import { Action, AgentRuntime, elizaLogger, IAgentRuntime, Memory, settings, stringToUuid, type Character } from '@elizaos/core';
+import { AgentRuntime, elizaLogger, stringToUuid, type Character } from '@elizaos/core';
 import { bootstrapPlugin } from '@elizaos/plugin-bootstrap';
 import { createNodePlugin } from '@elizaos/plugin-node';
 import { solanaPlugin } from '@elizaos/plugin-solana';

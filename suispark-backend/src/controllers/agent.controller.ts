@@ -4,7 +4,7 @@ import { logger } from '../utils/logger.js';
 import { startAgent } from '../agent/agent.js';
 import { sharkCounterQuestionTemplate, sharkEvaluationTemplate } from '../agent/constant.js';
 import charactersModel from '../models/character.model.js';
-import usersModel from '../models/user.model.js';
+import usersModel, { User } from '../models/user.model.js';
 import { NUMBER_OF_ROUND, ORCHESTRATOR_NAME } from '../constant.js';
 
 export class AgentController {
@@ -83,14 +83,26 @@ export class AgentController {
         return false;
       };
 
-      const message = req.body.message;
+      let message = req.body.message;
       const roomId = req.body.roomId;
+      const firstMessage = req.body.firstMessage
 
-      if (!message || !roomId) {
+      if (!roomId) {
         res.status(400).json({
-          error: 'Invalid Request.',
+          error: 'Invalid Request. You must provide roomId',
         });
         return;
+      }
+
+      if(!message){
+        if(firstMessage==="false"){
+          res.status(400).json({
+            error: 'Invalid Request. You must provide message',
+          });
+          return;
+        }
+        const roomData:User = await usersModel.findOne({"rooms.id":roomId})
+        message = roomData.rooms[0].proposal.abstract
       }
 
       //binding roomManager runtime to roomId to acces all the memory in the room

@@ -85,7 +85,7 @@ export class AgentController {
 
       let message = req.body.message;
       const roomId = req.body.roomId;
-      const firstMessage = req.body.firstMessage
+      const firstMessage = req.body.firstMessage;
 
       if (!roomId) {
         res.status(400).json({
@@ -94,15 +94,15 @@ export class AgentController {
         return;
       }
 
-      if(!message){
-        if(firstMessage==="false"){
+      if (!message) {
+        if (firstMessage === 'false') {
           res.status(400).json({
             error: 'Invalid Request. You must provide message',
           });
           return;
         }
-        const roomData:User = await usersModel.findOne({"rooms.id":roomId})
-        message = roomData.rooms[0].proposal.abstract
+        const roomData: User = await usersModel.findOne({ 'rooms.id': roomId });
+        message = roomData.rooms[0].proposal.abstract;
       }
 
       //binding roomManager runtime to roomId to acces all the memory in the room
@@ -213,7 +213,6 @@ export class AgentController {
         return;
       }
       const chatHistory = await this.getRoomHistory(roomId);
-      console.log(chatHistory)
       res.json({
         messages: chatHistory,
         error: null,
@@ -225,7 +224,7 @@ export class AgentController {
 
   public getProposalDecision = async (req: Request, res: Response) => {
     try {
-      const roomId = req.params.roomId as `${string}-${string}-${string}-${string}-${string}`
+      const roomId = req.params.roomId as `${string}-${string}-${string}-${string}-${string}`;
 
       if (!roomId) {
         res.status(400).json({
@@ -257,7 +256,6 @@ export class AgentController {
           context: context,
           modelClass: ModelClass.SMALL,
         });
-        console.log(agentRuntime.character.name, response);
         if (response.toLowerCase().includes('yes')) {
           return true;
         }
@@ -274,6 +272,13 @@ export class AgentController {
       };
       const chatHistory = await this.getRoomHistory(roomId);
 
+      if (chatHistory.length < NUMBER_OF_ROUND) {
+        res.json({
+          decision: null,
+          error: 'Rounds not completed.',
+        });
+        return;
+      }
       const agents = Array.from(global.agentsInMemory.values()).filter((agent: AgentRuntime) => agent.character.name !== ORCHESTRATOR_NAME);
       const decisions = await Promise.all(agents.map(getDecisionFromAgent));
       const finalDecision = checkDecisions(decisions);
@@ -411,8 +416,6 @@ export class AgentController {
           clients: agent.character.clients,
           modelProvider: agent.character.modelProvider,
         };
-
-        console.log({ updatedCharacterData });
 
         // Update the database with the merged data
         await charactersModel.updateOne({ agentId }, { $set: updatedCharacterData });

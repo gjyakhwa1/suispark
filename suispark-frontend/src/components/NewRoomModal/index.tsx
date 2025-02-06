@@ -1,17 +1,18 @@
 import React, { useState } from "react";
 import { X } from "lucide-react";
 import axios from "axios";
-import IRoom from "../../types/room.interface";
 interface NewRoomModalProps {
   isOpen: boolean;
   onClose: () => void;
   getRooms: () => void;
+  setLoading: (loading:boolean)=>void;
 }
 
 export const NewRoomModal: React.FC<NewRoomModalProps> = ({
   isOpen,
   onClose,
   getRooms,
+  setLoading,
 }) => {
   const [formData, setFormData] = useState({
     abstract: "",
@@ -27,16 +28,30 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({
       walletAddress,
       ...formData,
     };
-    const response = await axios.post("/user/createRoom", newRoom);
-    await getRooms();
-    onClose();
+    try {
+      onClose();
+      setLoading(true);
+      let response = await axios.post("/user/createRoom", newRoom);
+      if (response.status == 200) {
+        const chatMessage = {
+          roomId: response.data.room.id,
+          firstMessage: "true",
+        };
+        response = await axios.post("/agent/chat", chatMessage);
+        console.log(response)
+      }
+      setLoading(false);
+      await getRooms();
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg w-full max-w-md p-6">
+      <div className="bg-white rounded-lg w-full max-w-2xl p-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Create New Room</h2>
+          <h2 className="text-xl font-semibold">Submit your idea</h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700"
@@ -73,16 +88,6 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({
               required
             />
           </div>
-          {/* <div>
-            <label className="block text-sm font-medium text-gray-700">Timeline</label>
-            <textarea
-              className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              rows={4}
-              value={formData.timeline}
-              onChange={(e) => setFormData({ ...formData, timeline: e.target.value })}
-              required
-            />
-          </div> */}
           <div className="flex justify-end space-x-3">
             <button
               type="button"
@@ -93,7 +98,7 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 cursor-pointer"
+              className="px-4 py-2 text-sm font-medium text-white bg-black rounded-md hover:bg-gray-800 cursor-pointer"
             >
               Create Room
             </button>

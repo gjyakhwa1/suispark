@@ -35,7 +35,6 @@ export const RoomSchema = new Schema<Room>(
     id: {
       type: String,
       required: true,
-      unique: true,
     },
     active: {
       type: Boolean,

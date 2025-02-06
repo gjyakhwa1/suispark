@@ -35,7 +35,7 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
   const [selectedAgent, setSelectedAgent] = useState("");
   const [roundFinished, setRoundFinished] = useState(false);
   const [displayModal, setDisplayModal] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement | null>(null); 
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const getRoomDetails = async () => {
     const response = await axios.get(`/agent/getRoomDetails/${activeRoom}`);
@@ -43,19 +43,32 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
       ...response.data.roomDetails,
       messages: response.data.messages,
     });
-    setSelectedAgent(response.data.messages[1].source)
+    setSelectedAgent(response.data.messages[1].source);
   };
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
+    setRoomDetails((prevDetails) => ({
+      ...prevDetails!,
+      messages: [...prevDetails!.messages, { source: "user", text: message }],
+    }));
+    setMessage("");
     const response = await axios.post("/agent/chat", {
       message,
       roomId: activeRoom,
     });
-    await getRoomDetails();
+    if (response.data.agent) {
+      setRoomDetails((prevDetails) => ({
+        ...prevDetails!,
+        messages: [
+          ...prevDetails!.messages,
+          { source: response.data.agent, text: response.data.message },
+        ],
+      }));
+    }
+
     setSelectedAgent(response.data.agent);
     setRoundFinished(response.data.roundFinished);
-    setMessage("");
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -71,8 +84,7 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
 
   useEffect(() => {
     getRoomDetails();
-  }, [activeRoom, displayModal]);
-
+  }, [activeRoom,displayModal]);
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -95,7 +107,7 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
               <div>
                 <img
                   src={agent.image}
-                  alt="Image 1"
+                  alt="Agent Image"
                   className={`${
                     selectedAgent === agent.name
                       ? "w-14 h-14 border-4 border-gray-300 "
@@ -121,18 +133,28 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
                 >
                   <div>
                     <img
-                      src={msg.source!=="user"?agents.filter((agent)=>agent.name===msg.source)[0].image:"shark.png"}
-                      alt="Image 1"
+                      src={
+                        msg.source !== "user"
+                          ? agents.filter(
+                              (agent) => agent.name === msg.source
+                            )[0].image
+                          : "shark.png"
+                      }
+                      alt="Agent Image"
                       className="w-8 h-8 object-cover rounded-full"
                     />
                   </div>
-                  <div className={`max-w-[70%] rounded-lg p-3 bg-gray-200 text-gray-900 ${msg.source === "user" ? "ml-auto" : "mr-auto"}`}>
+                  <div
+                    className={`max-w-[70%] rounded-lg p-3 bg-gray-200 text-gray-900 ${
+                      msg.source === "user" ? "ml-auto" : "mr-auto"
+                    }`}
+                  >
                     {msg.text}
                   </div>
                 </div>
               )
             )}
-            <div ref={messagesEndRef} />
+          <div ref={messagesEndRef} />
         </div>
         {roomDetails && roomDetails.active ? (
           !roundFinished ? (

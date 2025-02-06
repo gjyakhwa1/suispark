@@ -214,7 +214,7 @@ export class AgentController {
     return chatHistory;
   };
 
-  public getRoomChatHistory = async (req: Request, res: Response) => {
+  public getRoomDetails = async (req: Request, res: Response) => {
     try {
       const roomId = req.params.roomId as `${string}-${string}-${string}-${string}-${string}`;
 
@@ -224,13 +224,15 @@ export class AgentController {
         });
         return;
       }
+      const roomDetails = await usersModel.findOne({"rooms.id":roomId},{ "rooms.$": 1 })
       const chatHistory = await this.getRoomHistory(roomId);
-      res.json({
+      res.status(200).json({
+        roomDetails:roomDetails.rooms[0],
         messages: chatHistory,
         error: null,
       });
     } catch (error) {
-      res.status(200).json({ message: '', error: 'Error chatting orchestrator ' + error.toString() });
+      res.status(400).json({ message: '', error: 'Error chatting orchestrator ' + error.toString() });
     }
   };
 

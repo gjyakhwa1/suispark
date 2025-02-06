@@ -29,7 +29,8 @@ export const Chat: React.FC = () => {
 
   useEffect(() => {
     getRooms();
-  }, []);
+  }, [activeRoom]);
+
   return (
     <>
       {loading && (

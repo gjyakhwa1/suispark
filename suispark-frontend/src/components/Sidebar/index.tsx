@@ -1,20 +1,23 @@
 import React from "react";
 import { Menu, Plus, LogOut } from "lucide-react";
-import { useRoomStore } from "../../store/roomStore";
 import { useLogin } from "../../context/UserContext";
+import IRoom from "../../types/room.interface";
 
 interface SidebarProps {
   isOpen: boolean;
   onToggle: () => void;
   onNewRoom: () => void;
+  rooms: IRoom[];
+  setActiveRoom: (activeRoom: string) => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   isOpen,
   onToggle,
   onNewRoom,
+  rooms,
+  setActiveRoom,
 }) => {
-  const { rooms, currentRoom, setCurrentRoom } = useRoomStore();
   const { logOut } = useLogin();
 
   return (
@@ -52,15 +55,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
 
             <nav className="mt-4 overflow-y-auto h-[calc(100vh-100px)]">
-              {rooms.map((room) => (
+              {rooms.map((room: IRoom) => (
                 <button
                   key={room.id}
-                  onClick={() => setCurrentRoom(room)}
-                  className={`w-full text-left p-4 hover:bg-gray-800 flex items-center space-x-2 ${
-                    currentRoom?.id === room.id ? "bg-gray-800" : ""
-                  }`}
+                  onClick={() => setActiveRoom(room.id)}
+                  className={`w-full text-left p-4 hover:bg-gray-800 flex items-center space-x-2 `}
                 >
-                  <div className="truncate flex-1">{room.abstract}</div>
+                  <div className="truncate flex-1">{room.id}</div>
                 </button>
               ))}
             </nav>

@@ -1,30 +1,34 @@
-import React, { useState } from 'react';
-import { useRoomStore } from '../../store/roomStore';
-import { X } from 'lucide-react';
-
+import React, { useState } from "react";
+import { X } from "lucide-react";
+import axios from "axios";
+import IRoom from "../../types/room.interface";
 interface NewRoomModalProps {
   isOpen: boolean;
   onClose: () => void;
+  getRooms: () => void;
 }
 
-export const NewRoomModal: React.FC<NewRoomModalProps> = ({ isOpen, onClose }) => {
+export const NewRoomModal: React.FC<NewRoomModalProps> = ({
+  isOpen,
+  onClose,
+  getRooms,
+}) => {
   const [formData, setFormData] = useState({
-    abstract: '',
-    teamDetails: '',
-    timeline: '',
+    abstract: "",
+    teamDetails: "",
   });
-  const addRoom = useRoomStore((state) => state.addRoom);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const walletAddress = localStorage.getItem("walletAddress");
     const newRoom = {
-      id: crypto.randomUUID(),
+      walletAddress,
       ...formData,
-      createdAt: new Date(),
     };
-    addRoom(newRoom);
+    const response = await axios.post("/user/createRoom", newRoom);
+    await getRooms();
     onClose();
   };
 
@@ -33,32 +37,43 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({ isOpen, onClose }) =
       <div className="bg-white rounded-lg w-full max-w-md p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Create New Room</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
             <X size={24} />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Abstract</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Abstract
+            </label>
             <textarea
               className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               rows={10}
               value={formData.abstract}
-              onChange={(e) => setFormData({ ...formData, abstract: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, abstract: e.target.value })
+              }
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Team Details</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Team Details
+            </label>
             <textarea
               className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               rows={4}
               value={formData.teamDetails}
-              onChange={(e) => setFormData({ ...formData, teamDetails: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, teamDetails: e.target.value })
+              }
               required
             />
           </div>
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700">Timeline</label>
             <textarea
               className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -67,7 +82,7 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({ isOpen, onClose }) =
               onChange={(e) => setFormData({ ...formData, timeline: e.target.value })}
               required
             />
-          </div>
+          </div> */}
           <div className="flex justify-end space-x-3">
             <button
               type="button"

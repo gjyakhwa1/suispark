@@ -1,48 +1,51 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRoomStore } from "../../store/roomStore";
 import { Send } from "lucide-react";
+import axios from "axios";
 
-export const ChatInterface: React.FC = () => {
-  const [message, setMessage] = useState("");
-  const { currentRoom, messages, addMessage } = useRoomStore();
+export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
+  const [chatHistory, setHistory] = useState([]);
+  const [message, setMessage] = useState<string>("");
 
-  const handleSend = (e: React.FormEvent) => {
+  const getChatHistory = async () => {
+    const response = await axios.get(`/agent/getChatHistory/${activeRoom}`);
+    const chatHistory = response.data.messages;
+    setHistory(chatHistory);
+  };
+
+  const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim() || !currentRoom) return;
-
-    addMessage({
-      id: crypto.randomUUID(),
-      content: message,
-      sender: "user",
-      timestamp: new Date(),
-      roomId: currentRoom.id,
-    });
+    await axios.post("/agent/chat", { message, roomId: activeRoom });
+    await getChatHistory();
     setMessage("");
   };
 
+  useEffect(() => {
+    getChatHistory();
+  }, [activeRoom]);
+
   return (
     <div className="flex flex-col h-[98%] w-[98%] sm:w-[80%] m-auto border border-gray-300 rounded-lg p-2 my-[10px]">
+      {activeRoom}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages
-          .filter((msg) => msg.roomId === currentRoom?.id)
-          .map((msg) => (
+        {chatHistory.map((msg: { source: string; text: string }, index) => (
+          <div
+            key={index}
+            className={`flex ${
+              msg.source === "user" ? "justify-end" : "justify-start"
+            }`}
+          >
             <div
-              key={msg.id}
-              className={`flex ${
-                msg.sender === "user" ? "justify-end" : "justify-start"
+              className={`max-w-[70%] rounded-lg p-3 ${
+                msg.source === "user"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-900"
               }`}
             >
-              <div
-                className={`max-w-[70%] rounded-lg p-3 ${
-                  msg.sender === "user"
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-200 text-gray-900"
-                }`}
-              >
-                {msg.content}
-              </div>
+              {msg.text}
             </div>
-          ))}
+          </div>
+        ))}
       </div>
 
       <form onSubmit={handleSend} className="p-4">

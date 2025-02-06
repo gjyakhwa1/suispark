@@ -6,9 +6,13 @@ import {
   Navigate,
   useLocation,
 } from "react-router-dom";
+import axios from "axios";
+
 import { Login } from "./pages/Login";
 import { Chat } from "./pages/Chat";
 import { useLogin } from "./context/UserContext";
+
+import defaultConfig from "./config";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { isLoggedIn, userDetails } = useLogin();
@@ -31,7 +35,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
   const { isLoggedIn } = useLogin();
-
+  axios.defaults.baseURL = defaultConfig["baseUrl"];
   useEffect(() => {
     console.log("App mounted, initial auth state:", isLoggedIn);
   }, []);

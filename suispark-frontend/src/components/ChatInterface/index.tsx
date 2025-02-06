@@ -33,7 +33,7 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
   const [roomDetails, setRoomDetails] = useState<RoomDetails | null>(null);
   const [message, setMessage] = useState<string>("");
   const [selectedAgent, setSelectedAgent] = useState("");
-  const [roundFinished, setRoundFinished] = useState(false);
+  // const [roundFinished, setRoundFinished] = useState(false);
   const [displayModal, setDisplayModal] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -68,7 +68,8 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
     }
 
     setSelectedAgent(response.data.agent);
-    setRoundFinished(response.data.roundFinished);
+    // setRoundFinished(response.data.roundFinished);
+    localStorage.setItem("roundFinished", response.data.roundFinished ? "1" : "0");
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -84,7 +85,7 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
 
   useEffect(() => {
     getRoomDetails();
-  }, [activeRoom,displayModal]);
+  }, [activeRoom, displayModal]);
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -157,7 +158,7 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
           <div ref={messagesEndRef} />
         </div>
         {roomDetails && roomDetails.active ? (
-          !roundFinished ? (
+          !Boolean(Number(localStorage.getItem("roundFinished"))) ? (
             <form
               onSubmit={handleSend}
               className="p-2 border-gray-300 bg-white"

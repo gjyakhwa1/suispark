@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ArrowUp, CircleCheck, CircleX } from "lucide-react";
 import axios from "axios";
 import ResultModal from "../ResultModal";
@@ -32,9 +32,10 @@ const agents = [
 export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
   const [roomDetails, setRoomDetails] = useState<RoomDetails | null>(null);
   const [message, setMessage] = useState<string>("");
-  const [selectedAgent, setSelectedAgent] = useState("CEO");
+  const [selectedAgent, setSelectedAgent] = useState("");
   const [roundFinished, setRoundFinished] = useState(false);
   const [displayModal, setDisplayModal] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null); 
 
   const getRoomDetails = async () => {
     const response = await axios.get(`/agent/getRoomDetails/${activeRoom}`);
@@ -42,6 +43,7 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
       ...response.data.roomDetails,
       messages: response.data.messages,
     });
+    setSelectedAgent(response.data.messages[1].source)
   };
 
   const handleSend = async (e: React.FormEvent) => {
@@ -70,6 +72,14 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
   useEffect(() => {
     getRoomDetails();
   }, [activeRoom, displayModal]);
+
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [roomDetails?.messages]);
+
   return (
     <>
       {displayModal && (
@@ -88,7 +98,7 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
                   alt="Image 1"
                   className={`${
                     selectedAgent === agent.name
-                      ? "w-12 h-12 border-4 border-gray-300 "
+                      ? "w-14 h-14 border-4 border-gray-300 "
                       : "w-8 h-8"
                   } object-cover rounded-full`}
                 />
@@ -122,6 +132,7 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
                 </div>
               )
             )}
+            <div ref={messagesEndRef} />
         </div>
         {roomDetails && roomDetails.active ? (
           !roundFinished ? (

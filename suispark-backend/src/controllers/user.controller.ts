@@ -5,7 +5,6 @@ import { Room } from '../models/room.model.js';
 import { initializeDatabase } from '../agent/database.js';
 import fs from 'fs';
 import path from 'path';
-import { error } from 'console';
 
 export class UserController {
   public createUser = async (req: Request, res: Response) => {

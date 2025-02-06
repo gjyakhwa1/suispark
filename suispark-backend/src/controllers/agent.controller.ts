@@ -93,7 +93,19 @@ export class AgentController {
         });
         return;
       }
-
+      const userRoom = await usersModel.findOne({"rooms.id":roomId},{ "rooms.$": 1 });
+      if(!userRoom){
+        res.status(400).json({
+          error: 'Invalid Request. Room id doesnot exist',
+        });
+        return;
+      }
+      if(!userRoom.rooms[0].active){
+        res.status(400).json({
+          error: 'Invalid Request. Room is closed',
+        });
+        return;
+      }
       if (!message) {
         if (firstMessage === 'false') {
           res.status(400).json({

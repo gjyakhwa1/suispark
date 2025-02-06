@@ -1,4 +1,5 @@
 import { useAuthCallback, useEnokiFlow, useZkLogin } from "@mysten/enoki/react";
+import axios from "axios";
 import React, {
   createContext,
   useState,
@@ -88,6 +89,8 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
             address: zkLogin.address,
           });
           setIsLoggedIn(true);
+          await axios.post("/user/createUser",{"walletAddress":zkLogin.address})
+          localStorage.setItem("walletAddress",zkLogin.address)
         } else {
           clearStates();
         }

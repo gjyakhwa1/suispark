@@ -41,6 +41,11 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({
         console.log(response)
       }
       setLoading(false);
+      setFormData({
+        abstract: "",
+        teamDetails: "",
+      });
+      localStorage.setItem("roundFinished","0")
       await getRooms();
     } catch (e) {
       console.log(e);

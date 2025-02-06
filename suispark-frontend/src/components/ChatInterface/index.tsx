@@ -124,7 +124,7 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
             )}
         </div>
         {roomDetails && roomDetails.active ? (
-          roundFinished ? (
+          !roundFinished ? (
             <form
               onSubmit={handleSend}
               className="p-2 border-gray-300 bg-white"

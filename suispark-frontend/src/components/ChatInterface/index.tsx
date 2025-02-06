@@ -17,11 +17,11 @@ interface RoomDetails {
 const agents = [
   {
     name: "CTO",
-    image: "shark.png",
+    image: "cto.png",
   },
   {
     name: "SUI Expert",
-    image: "shark.png",
+    image: "sui.png",
   },
   {
     name: "CEO",
@@ -103,17 +103,20 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
               (msg: { source: string; text: string }, index) => (
                 <div
                   key={index}
-                  className={`flex ${
-                    msg.source === "user" ? "justify-end" : "justify-start"
+                  className={`flex flex-row gap-2 items-center w-full ${
+                    msg.source === "user"
+                      ? "justify-end flex-row-reverse"
+                      : "justify-start"
                   }`}
                 >
-                  <div
-                    className={`max-w-[70%] rounded-lg p-3 ${
-                      msg.source === "user"
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-200 text-gray-900"
-                    }`}
-                  >
+                  <div>
+                    <img
+                      src={msg.source!=="user"?agents.filter((agent)=>agent.name===msg.source)[0].image:"shark.png"}
+                      alt="Image 1"
+                      className="w-8 h-8 object-cover rounded-full"
+                    />
+                  </div>
+                  <div className={`max-w-[70%] rounded-lg p-3 bg-gray-200 text-gray-900 ${msg.source === "user" ? "ml-auto" : "mr-auto"}`}>
                     {msg.text}
                   </div>
                 </div>
@@ -145,7 +148,9 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
             </form>
           ) : (
             <div className="flex flex-row justify-center items-center gap-2 border border-gray-100 bg-white shadow-md p-2">
-              <div className="font-semibold text-lg">Agents are ready to make their decisions.</div>
+              <div className="font-semibold text-lg">
+                Agents are ready to make their decisions.
+              </div>
               <div
                 className="hover:cursor-pointer hover:bg-gray-800 border border-black p-2 rounded-lg bg-black text-white"
                 onClick={handleDisplayResult}

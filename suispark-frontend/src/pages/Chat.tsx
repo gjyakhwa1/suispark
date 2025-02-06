@@ -17,26 +17,26 @@ export const Chat: React.FC = () => {
     const response = await axios.get(`/user/getRooms/${walletAddress}`);
     const _rooms = response.data.rooms;
     setRooms(_rooms);
-    if (_rooms.length > 0) {
-      let _activeRoom = rooms.filter((room) => room.active);
-      if (_activeRoom.length > 0) {
-        setActiveRoom(_activeRoom[0].id);
-      } else {
-        setActiveRoom(_rooms[0].id);
-      }
+    const activeRoomFromDb = _rooms.find((room:any) => room.active);
+
+    if (activeRoomFromDb) {
+      setActiveRoom(activeRoomFromDb.id);
+    } else {
+      setActiveRoom(_rooms[0].id);
     }
   };
 
   useEffect(() => {
     getRooms();
-  }, [activeRoom]);
-
+  }, []);
   return (
     <>
       {loading && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex flex-col items-center justify-center z-50">
           <div className="animate-spin w-12 h-12 border-4 border-white border-t-transparent rounded-full"></div>
-          <p className="mt-4 text-white text-lg font-semibold">Evaluating your idea...</p>
+          <p className="mt-4 text-white text-lg font-semibold">
+            Evaluating your idea...
+          </p>
         </div>
       )}
       <div className="h-screen flex">

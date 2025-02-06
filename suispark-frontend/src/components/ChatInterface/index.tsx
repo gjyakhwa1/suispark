@@ -1,70 +1,174 @@
 import React, { useEffect, useState } from "react";
-import { useRoomStore } from "../../store/roomStore";
-import { Send } from "lucide-react";
+import { ArrowUp, CircleCheck, CircleX } from "lucide-react";
 import axios from "axios";
+import ResultModal from "../ResultModal";
+
+interface RoomDetails {
+  active: boolean;
+  funded: boolean;
+  id: string;
+  proposal: {
+    abstract: string;
+    teamDetails: string;
+  };
+  messages: { source: string; text: string }[];
+}
+
+const agents = [
+  {
+    name: "CTO",
+    image: "shark.png",
+  },
+  {
+    name: "SUI Expert",
+    image: "shark.png",
+  },
+  {
+    name: "CEO",
+    image: "shark.png",
+  },
+];
 
 export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
-  const [chatHistory, setHistory] = useState([]);
+  const [roomDetails, setRoomDetails] = useState<RoomDetails | null>(null);
   const [message, setMessage] = useState<string>("");
+  const [selectedAgent, setSelectedAgent] = useState("CEO");
+  const [roundFinished, setRoundFinished] = useState(false);
+  const [displayModal, setDisplayModal] = useState(false);
 
-  const getChatHistory = async () => {
-    const response = await axios.get(`/agent/getChatHistory/${activeRoom}`);
-    const chatHistory = response.data.messages;
-    setHistory(chatHistory);
+  const getRoomDetails = async () => {
+    const response = await axios.get(`/agent/getRoomDetails/${activeRoom}`);
+    setRoomDetails({
+      ...response.data.roomDetails,
+      messages: response.data.messages,
+    });
   };
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    await axios.post("/agent/chat", { message, roomId: activeRoom });
-    await getChatHistory();
+    const response = await axios.post("/agent/chat", {
+      message,
+      roomId: activeRoom,
+    });
+    await getRoomDetails();
+    setSelectedAgent(response.data.agent);
+    setRoundFinished(response.data.roundFinished);
     setMessage("");
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend(e as React.FormEvent);
+    }
+  };
+
+  const handleDisplayResult = () => {
+    setDisplayModal(true);
+  };
+
   useEffect(() => {
-    getChatHistory();
-  }, [activeRoom]);
-
+    getRoomDetails();
+  }, [activeRoom, displayModal]);
   return (
-    <div className="flex flex-col h-[98%] w-[98%] sm:w-[80%] m-auto border border-gray-300 rounded-lg p-2 my-[10px]">
-      {activeRoom}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {chatHistory.map((msg: { source: string; text: string }, index) => (
-          <div
-            key={index}
-            className={`flex ${
-              msg.source === "user" ? "justify-end" : "justify-start"
-            }`}
-          >
+    <>
+      {displayModal && (
+        <ResultModal setDisplayModal={setDisplayModal} roomId={activeRoom} />
+      )}
+      <div className="flex flex-col h-[98%] w-[98%] sm:w-[80%] m-auto rounded-lg my-[10px] overflow-hidden">
+        <div className="flex flex-row gap-16 justify-center items-center">
+          {agents.map((agent) => (
             <div
-              className={`max-w-[70%] rounded-lg p-3 ${
-                msg.source === "user"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200 text-gray-900"
-              }`}
+              className="flex flex-col justify-center items-center"
+              key={agent.name}
             >
-              {msg.text}
+              <div>
+                <img
+                  src={agent.image}
+                  alt="Image 1"
+                  className={`${
+                    selectedAgent === agent.name
+                      ? "w-12 h-12 border-4 border-gray-300 "
+                      : "w-8 h-8"
+                  } object-cover rounded-full`}
+                />
+              </div>
+              <div>{agent.name}</div>
             </div>
-          </div>
-        ))}
-      </div>
-
-      <form onSubmit={handleSend} className="p-4">
-        <div className="flex items-center space-x-2 w-full">
-          <input
-            type="text"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Type your message..."
-            className="flex-1 rounded-lg border border-gray-300 p-2 focus:outline-none focus:border-blue-500"
-          />
-          <button
-            type="submit"
-            className="bg-blue-600 text-white rounded-lg p-2 hover:bg-blue-700 flex items-center justify-center"
-          >
-            <Send size={20} />
-          </button>
+          ))}
         </div>
-      </form>
-    </div>
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
+          {roomDetails &&
+            roomDetails.messages.map(
+              (msg: { source: string; text: string }, index) => (
+                <div
+                  key={index}
+                  className={`flex ${
+                    msg.source === "user" ? "justify-end" : "justify-start"
+                  }`}
+                >
+                  <div
+                    className={`max-w-[70%] rounded-lg p-3 ${
+                      msg.source === "user"
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-200 text-gray-900"
+                    }`}
+                  >
+                    {msg.text}
+                  </div>
+                </div>
+              )
+            )}
+        </div>
+        {roomDetails && roomDetails.active ? (
+          roundFinished ? (
+            <form
+              onSubmit={handleSend}
+              className="p-2 border-gray-300 bg-white"
+            >
+              <div className="flex items-center w-full p-2 border border-gray-100 bg-white rounded-2xl shadow-md">
+                <textarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Message Shark"
+                  onKeyDown={handleKeyDown}
+                  className="flex-1 bg-transparent p-2 outline-none text-gray-800 resize-none max-h-[100px] overflow-y-auto"
+                  rows={3}
+                />
+                <button
+                  type="submit"
+                  className="bg-black text-white rounded-full p-2 hover:bg-gray-800 flex items-center justify-center"
+                >
+                  <ArrowUp size={20} />
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div className="flex flex-row justify-center items-center gap-2 border border-gray-100 bg-white shadow-md p-2">
+              <div className="font-semibold text-lg">Shark has completed their evaluation</div>
+              <div
+                className="hover:cursor-pointer hover:bg-gray-800 border border-black p-2 rounded-lg bg-black text-white"
+                onClick={handleDisplayResult}
+              >
+                View your result
+              </div>
+            </div>
+          )
+        ) : (
+          <div className="flex items-center justify-center font-semibold text-lg hover:cursor-not-allowed w-full text-center rounded-lg p-2 border border-gray-100 bg-white shadow-md">
+            Room is closed. The proposal is{" "}
+            {roomDetails && roomDetails.funded ? (
+              <>
+                funded &nbsp; <CircleCheck className="inline text-green-500" />
+              </>
+            ) : (
+              <>
+                not funded &nbsp; <CircleX className="inline text-red-500" />
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    </>
   );
 };

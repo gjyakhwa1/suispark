@@ -27,5 +27,6 @@ export class UserRoute implements Routes {
     });
     this.router.post(`${this.path}/createUser`, this.userController.createUser);
     this.router.post(`${this.path}/createRoom`, this.userController.createRoom);
+    this.router.get(`${this.path}/getRooms/:walletAddress`, this.userController.getRooms);
   }
 }

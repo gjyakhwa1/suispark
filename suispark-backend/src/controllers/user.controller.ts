@@ -5,6 +5,7 @@ import { Room } from '../models/room.model.js';
 import { initializeDatabase } from '../agent/database.js';
 import fs from 'fs';
 import path from 'path';
+import { error } from 'console';
 
 export class UserController {
   public createUser = async (req: Request, res: Response) => {
@@ -22,7 +23,7 @@ export class UserController {
           user: existingUser,
           error: null,
         });
-        return
+        return;
       }
       let newUser = null;
 
@@ -88,6 +89,24 @@ export class UserController {
       } catch (error) {
         res.status(200).json({ room: null, error: 'Error creating room ' + error.toString() });
       }
+    } catch (e) {
+      res.status(500).json({
+        error: e.message,
+      });
+    }
+  };
+
+  public getRooms = async (req: Request, res: Response) => {
+    try {
+      const walletAddress = req.params.walletAddress;
+      if (!walletAddress) {
+        res.status(400).json({
+          error: 'Invalid request!. Please include walletAddress',
+        });
+        return;
+      }
+      const userRooms = await usersModel.findOne({ walletAddress: walletAddress });
+      res.status(200).json({ rooms: userRooms.rooms, walletAddress: walletAddress, error: null });
     } catch (e) {
       res.status(500).json({
         error: e.message,

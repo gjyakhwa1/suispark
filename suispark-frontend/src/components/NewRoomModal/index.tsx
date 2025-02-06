@@ -50,7 +50,7 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({
               Abstract
             </label>
             <textarea
-              className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2"
               rows={10}
               value={formData.abstract}
               onChange={(e) =>
@@ -64,7 +64,7 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({
               Team Details
             </label>
             <textarea
-              className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2"
               rows={4}
               value={formData.teamDetails}
               onChange={(e) =>

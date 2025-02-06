@@ -16,6 +16,14 @@ export class UserController {
         });
         return;
       }
+      const existingUser = await usersModel.findOne({ walletAddress: user.walletAddress });
+      if (existingUser) {
+        res.status(200).json({
+          user: existingUser,
+          error: null,
+        });
+        return
+      }
       let newUser = null;
 
       try {

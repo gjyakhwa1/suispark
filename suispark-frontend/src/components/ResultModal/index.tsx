@@ -44,7 +44,7 @@ const ResultModal: React.FC<ResultModalProps> = ({
           <div className="inset-0 bg-white bg-opacity-90 flex flex-col items-center justify-center">
             <div className="animate-spin w-12 h-12 border-4 border-gray-500 border-t-transparent rounded-full"></div>
             <p className="mt-4 text-gray-700 text-lg font-semibold">
-              Generating Result...
+              Evaluating your proposal...
             </p>
           </div>
         ) : (

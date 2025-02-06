@@ -145,12 +145,12 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
             </form>
           ) : (
             <div className="flex flex-row justify-center items-center gap-2 border border-gray-100 bg-white shadow-md p-2">
-              <div className="font-semibold text-lg">Shark has completed their evaluation</div>
+              <div className="font-semibold text-lg">Agents are ready to make their decisions.</div>
               <div
                 className="hover:cursor-pointer hover:bg-gray-800 border border-black p-2 rounded-lg bg-black text-white"
                 onClick={handleDisplayResult}
               >
-                View your result
+                View Result
               </div>
             </div>
           )

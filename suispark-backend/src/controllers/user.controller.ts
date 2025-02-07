@@ -1,10 +1,6 @@
 import { Request, Response } from 'express';
-import { logger } from '../utils/logger.js';
 import usersModel from '../models/user.model.js';
 import { Room } from '../models/room.model.js';
-import { initializeDatabase } from '../agent/database.js';
-import fs from 'fs';
-import path from 'path';
 
 export class UserController {
   public createUser = async (req: Request, res: Response) => {
@@ -68,14 +64,7 @@ export class UserController {
         return;
       }
       let newRoom = null;
-      // create room
-      const dataDir = path.join(global.__dirname, '../data');
-      if (!fs.existsSync(dataDir)) {
-        fs.mkdirSync(dataDir, { recursive: true });
-      }
-      const db = initializeDatabase(dataDir);
-
-      const roomId = await db.createRoom();
+      const roomId = await global.db.createRoom();
       try {
         const roomParams = { abstract, teamDetails };
         newRoom = {

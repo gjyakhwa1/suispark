@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { X } from "lucide-react";
 import axios from "axios";
+import { toast } from "react-toastify";
 interface NewRoomModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -47,7 +48,13 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({
       });
       localStorage.setItem("roundFinished","0")
       await getRooms();
-    } catch (e) {
+    } catch (e:any) {
+      setLoading(false);
+      setFormData({
+        abstract: "",
+        teamDetails: "",
+      });
+      toast.error(e.response.data.error)
       console.log(e);
     }
   };

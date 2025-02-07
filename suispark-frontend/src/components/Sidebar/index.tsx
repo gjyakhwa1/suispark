@@ -71,7 +71,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       activeRoom && activeRoom === room.id ? "bg-gray-300" : ""
                     }`}
                   >
-                    {room.id}
+                    {room.proposal.abstract}
                   </div>
                 </button>
               ))}

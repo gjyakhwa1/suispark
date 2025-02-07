@@ -58,6 +58,9 @@ export class AgentController {
     }
   };
 
+  private formatChatHistory = (chatHistory: Memory[]) =>
+    chatHistory.reduce((acc, message) => acc + `${message.content.source}:${message.content.text}\n\n`, '');
+
   public chatOrchestrator = async (req: Request, res: Response) => {
     try {
       const selectRandomAgent = (): AgentRuntime => {
@@ -72,9 +75,6 @@ export class AgentController {
         const agentRuntime = global.agentsInMemory.get(agentId);
         return agentRuntime;
       };
-
-      const getChatHistory = (chatHistory: Memory[]) =>
-        chatHistory.reduce((acc, message) => acc + `${message.content.source}:${message.content.text}\n\n`, '');
 
       const checkForCompletion = (chatHistoryLength: number): boolean => {
         if (chatHistoryLength >= NUMBER_OF_ROUND) {
@@ -113,7 +113,7 @@ export class AgentController {
           });
           return;
         }
-        const roomData: User = await usersModel.findOne({ 'rooms.id': roomId });
+        const roomData: User = await usersModel.findOne({ 'rooms.id': roomId }, { 'rooms.$': 1 } );
         message = roomData.rooms[0].proposal.abstract;
       }
 
@@ -163,7 +163,7 @@ export class AgentController {
       };
       const state = await agentRuntime.composeState(queryMemory, {
         chatHistory: `
-        ${getChatHistory(chatHistory)}
+        ${this.formatChatHistory(chatHistory)}
 
         "user":${message}
         ${agentRuntime.character.name}:
@@ -257,8 +257,14 @@ export class AgentController {
             text: '',
           } as Content,
         };
+        const roomManagerRuntime = Array.from(global.agentsInMemory.values()).filter(
+          (agent: AgentRuntime) => agent.character.name === ORCHESTRATOR_NAME,
+        )[0] as AgentRuntime;
+        await global.db.addParticipant(roomManagerRuntime.agentId, roomId);
+        const chatHistory = await roomManagerRuntime.messageManager.getMemoriesByRoomIds({ roomIds: [roomId] });
+
         const state = await agentRuntime.composeState(queryMemory, {
-          chatHistory,
+          chatHistory: this.formatChatHistory(chatHistory),
         });
 
         let context = composeContext({
@@ -270,6 +276,10 @@ export class AgentController {
           context: context,
           modelClass: ModelClass.SMALL,
         });
+        console.log("===================")
+        console.log(agentRuntime.character.name)
+        console.log(response)
+        console.log("===================")
         if (response.toLowerCase().includes('yes')) {
           return true;
         }

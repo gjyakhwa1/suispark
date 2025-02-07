@@ -145,7 +145,7 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
                     />
                   </div>
                   <div
-                    className={`max-w-[70%] rounded-lg p-3 bg-gray-200 text-gray-900 ${
+                    className={`max-w-[70%] rounded-lg p-3 bg-[#f3f3f3] text-gray-900 ${
                       msg.source === "user" ? "ml-auto" : "mr-auto"
                     }`}
                   >

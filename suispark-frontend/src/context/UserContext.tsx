@@ -76,6 +76,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const clearStates = () => {
     setIsLoggedIn(false);
     setUserDetails(UserDetailsInitialValues);
+    localStorage.removeItem("walletAddress");
   };
 
   useEffect(() => {
@@ -89,8 +90,16 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
             address: zkLogin.address,
           });
           setIsLoggedIn(true);
-          await axios.post("/user/createUser",{"walletAddress":zkLogin.address})
-          localStorage.setItem("walletAddress",zkLogin.address)
+          const localStorageWalletAddress =
+            localStorage.getItem("walletAddress");
+          if (
+            localStorageWalletAddress !== zkLogin.address
+          ) {
+            await axios.post("/user/createUser", {
+              walletAddress: zkLogin.address,
+            });
+            localStorage.setItem("walletAddress", zkLogin.address);
+          }
         } else {
           clearStates();
         }

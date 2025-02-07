@@ -22,7 +22,9 @@ export const Chat: React.FC = () => {
     if (activeRoomFromDb) {
       setActiveRoom(activeRoomFromDb.id);
     } else {
-      setActiveRoom(_rooms[0].id);
+      if(_rooms.length>0){
+        setActiveRoom(_rooms[0].id);
+      }
     }
   };
 

@@ -21,7 +21,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   setActiveRoom,
 }) => {
   const { logOut } = useLogin();
-  console.log(activeRoom);
   return (
     <>
       {!isOpen && (

@@ -16,15 +16,15 @@ interface RoomDetails {
 
 const agents = [
   {
-    name: "CTO",
+    name: "Byte",
     image: "cto.png",
   },
   {
-    name: "SUI Expert",
+    name: "Suian",
     image: "sui.png",
   },
   {
-    name: "CEO",
+    name: "Jonah",
     image: "shark.png",
   },
 ];
@@ -33,7 +33,6 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
   const [roomDetails, setRoomDetails] = useState<RoomDetails | null>(null);
   const [message, setMessage] = useState<string>("");
   const [selectedAgent, setSelectedAgent] = useState("");
-  // const [roundFinished, setRoundFinished] = useState(false);
   const [displayModal, setDisplayModal] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 

@@ -67,7 +67,7 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
     }
 
     setSelectedAgent(response.data.agent);
-    // setRoundFinished(response.data.roundFinished);
+
     localStorage.setItem("roundFinished", response.data.roundFinished ? "1" : "0");
   };
 
@@ -110,7 +110,7 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
                   alt="Agent Image"
                   className={`${
                     selectedAgent === agent.name
-                      ? "w-14 h-14 border-4 border-gray-300 "
+                      ? "w-14 h-14 border-4 border-green-500 "
                       : "w-8 h-8"
                   } object-cover rounded-full`}
                 />

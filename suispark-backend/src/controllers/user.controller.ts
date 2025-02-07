@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import usersModel from '../models/user.model.js';
 import { Room } from '../models/room.model.js';
+import { AgentRuntime, embed } from '@elizaos/core';
+import { ORCHESTRATOR_NAME, PROPOSAL_SIMILARITY_THRESHOLD } from '../constant.js';
 
 export class UserController {
   public createUser = async (req: Request, res: Response) => {
@@ -63,6 +65,25 @@ export class UserController {
         });
         return;
       }
+      const roomManagerRuntime = Array.from(global.agentsInMemory.values()).filter(
+        (agent: AgentRuntime) => agent.character.name === ORCHESTRATOR_NAME,
+      )[0] as AgentRuntime;
+
+      const messageEmbeddings = await embed(roomManagerRuntime, abstract);
+      const similarProposal = await global.db.searchMemoriesByEmbedding(messageEmbeddings, {
+        tableName: 'messages',
+        agentId: roomManagerRuntime.agentId,
+      });
+      const similarProposalAboveThreshold = similarProposal.filter(proposal => proposal.similarity >= PROPOSAL_SIMILARITY_THRESHOLD);
+
+      if (similarProposalAboveThreshold && similarProposalAboveThreshold.length > 0) {
+        res.status(400).json({
+          message: '',
+          error: 'Proposal with similar idea has already been submitted.',
+        });
+        return;
+      }
+
       let newRoom = null;
       const roomId = await global.db.createRoom();
       try {

@@ -74,9 +74,8 @@ export class UserController {
         tableName: 'messages',
         agentId: roomManagerRuntime.agentId,
       });
-      const similarProposalAboveThreshold = similarProposal.filter(proposal => proposal.similarity >= PROPOSAL_SIMILARITY_THRESHOLD);
-
-      if (similarProposalAboveThreshold && similarProposalAboveThreshold.length > 0) {
+      const similarProposalBelowThreshold = similarProposal.filter(proposal => proposal.similarity <= PROPOSAL_SIMILARITY_THRESHOLD);
+      if (similarProposalBelowThreshold && similarProposalBelowThreshold.length > 0) {
         res.status(400).json({
           message: '',
           error: 'Proposal with similar idea has already been submitted.',

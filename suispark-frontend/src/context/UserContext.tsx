@@ -92,9 +92,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
           setIsLoggedIn(true);
           const localStorageWalletAddress =
             localStorage.getItem("walletAddress");
-          if (
-            localStorageWalletAddress !== zkLogin.address
-          ) {
+          if (localStorageWalletAddress !== zkLogin.address) {
             await axios.post("/user/createUser", {
               walletAddress: zkLogin.address,
             });
@@ -121,8 +119,9 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        Logging in to Sui Spark...
+      <div className="fixed inset-0 bg-black bg-opacity-70 flex flex-col items-center justify-center z-50">
+        <div className="animate-spin w-12 h-12 border-4 border-white border-t-transparent rounded-full"></div>
+        <p className="mt-4 text-white text-lg font-semibold">Please wait....</p>
       </div>
     );
   }

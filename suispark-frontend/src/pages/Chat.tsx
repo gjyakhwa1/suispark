@@ -64,6 +64,10 @@ export const Chat: React.FC = () => {
             </div>
           )}
         </main>
+        <div className="absolute right-0 flex flex-col items-center justify-center mt-2 mr-2  bg-white shadow-md rounded-lg w-40 text-center">
+          <div className="text-gray-500 text-lg font-medium">Project Fund</div>
+          <div className="text-green-600 text-2xl font-bold mt-1">$500</div>
+        </div>
 
         <NewRoomModal
           isOpen={isModalOpen}

@@ -112,7 +112,7 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({
               type="submit"
               className="px-4 py-2 text-sm font-medium text-white bg-black rounded-md hover:bg-gray-800 cursor-pointer"
             >
-              Create Room
+              Submit
             </button>
           </div>
         </form>

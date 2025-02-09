@@ -203,7 +203,7 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
               </div>
             </form>
           ) : (
-            <div className="flex flex-row justify-center items-center gap-2 border border-gray-100 bg-white shadow-md p-2">
+            <div className="flex flex-row justify-center items-center gap-2 border border-gray-100 bg-white shadow-md p-2 my-2 rounded-2xl">
               <div className="font-semibold text-lg">
                 Agents are ready to make their decisions.
               </div>
@@ -216,7 +216,7 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
             </div>
           )
         ) : (
-          <div className="flex items-center justify-center font-semibold text-lg hover:cursor-not-allowed w-full text-center rounded-lg p-2 border border-gray-100 bg-white shadow-md">
+          <div className="flex items-center my-2 justify-center font-semibold text-lg hover:cursor-not-allowed w-full text-center rounded-2xl p-2 border border-gray-100 bg-white shadow-md">
             Room is closed. The proposal is{" "}
             {roomDetails && roomDetails.funded ? (
               <>

@@ -12,14 +12,14 @@ const ResultModal: React.FC<ResultModalProps> = ({
   roomId,
 }) => {
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(false);
+  const [result, setResult] = useState<boolean|undefined>(undefined);
 
   const generateResult = async () => {
     try {
       setLoading(true);
       const response = await axios.get(`/agent/getDecision/${roomId}`);
-      setLoading(false);
       setResult(response.data.decision);
+      setLoading(false);
     } catch (e) {
       console.log(e);
     }
@@ -53,7 +53,7 @@ const ResultModal: React.FC<ResultModalProps> = ({
               Your proposal has {!result && "not"} been funded
             </div>
             <div>
-              {result ? (
+              {typeof(result)==="boolean" && result ? (
                 <CircleCheck size={64} className="text-green-500" />
               ) : (
                 <CircleX size={64} className="text-red-500" />

@@ -34,6 +34,7 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
   const [message, setMessage] = useState<string>("");
   const [selectedAgent, setSelectedAgent] = useState("");
   const [displayModal, setDisplayModal] = useState(false);
+  const [isThinking, setIsThinking] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const getRoomDetails = async () => {
@@ -52,6 +53,7 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
       messages: [...prevDetails!.messages, { source: "user", text: message }],
     }));
     setMessage("");
+    setIsThinking(true);
     const response = await axios.post("/agent/chat", {
       message,
       roomId: activeRoom,
@@ -68,7 +70,11 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
 
     setSelectedAgent(response.data.agent);
 
-    localStorage.setItem("roundFinished", response.data.roundFinished ? "1" : "0");
+    localStorage.setItem(
+      "roundFinished",
+      response.data.roundFinished ? "1" : "0"
+    );
+    setIsThinking(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -154,8 +160,25 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
                 </div>
               )
             )}
+
+          {isThinking && (
+            <div className="flex items-center gap-2">
+              <img
+                src={
+                  agents.find((a) => a.name === selectedAgent)?.image ||
+                  "shark.png"
+                }
+                className="w-8 h-8 rounded-full"
+                alt="Agent"
+              />
+              <div className="p-3 bg-gray-200 text-gray-600 rounded-lg">
+                Thinking...
+              </div>
+            </div>
+          )}
           <div ref={messagesEndRef} />
         </div>
+
         {roomDetails && roomDetails.active ? (
           !Boolean(Number(localStorage.getItem("roundFinished"))) ? (
             <form
@@ -166,7 +189,7 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Message Shark"
+                  placeholder="Message Agent"
                   onKeyDown={handleKeyDown}
                   className="flex-1 bg-transparent p-2 outline-none text-gray-800 resize-none max-h-[100px] overflow-y-auto"
                   rows={3}

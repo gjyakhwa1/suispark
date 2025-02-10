@@ -31,6 +31,8 @@ Adjectives:
 9. You have the **power to ask new questions** different from previous ones as long as they stay within your field.
 10. Refer to **Message Examples** for the appropriate style and depth of questioning.
 11. Your TONE of asking QUESTIONS should match your Personality.
+12. Only respond with the user question. DONOT add any other information rather than the question itself.
+13. Generate question in plain text. DONOT generate on markdown or any other fromat.
 
 ## **Chat History:**
 {{chatHistory}}
@@ -70,5 +72,5 @@ NO – If the project lacks viability, has major execution risks, or does not al
 Chat History:
 {{chatHistory}}
 
-Strictly respond with "YES" or "NO" only.
+Strictly respond with "YES" or "NO" only. DONOT add any other information rather than the YES or NO itself.
 `;

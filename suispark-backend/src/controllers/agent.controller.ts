@@ -6,7 +6,8 @@ import { sharkCounterQuestionTemplate, sharkEvaluationTemplate } from '../agent/
 import charactersModel from '../models/character.model.js';
 import usersModel, { User } from '../models/user.model.js';
 import { NUMBER_OF_ROUND, ORCHESTRATOR_NAME } from '../constant.js';
-
+import { approveProject } from '../services/sui.service.js';
+import { Room } from '@models/room.model.js';
 export class AgentController {
   public createAgent = async (req: Request, res: Response) => {
     try {
@@ -287,7 +288,7 @@ export class AgentController {
           context: context,
           modelClass: ModelClass.SMALL,
         });
-        response = this.formatAgentOutput(response)
+        response = this.formatAgentOutput(response);
         console.log('===================');
         console.log(agentRuntime.character.name);
         console.log(response);
@@ -318,7 +319,10 @@ export class AgentController {
       const agents = Array.from(global.agentsInMemory.values()).filter((agent: AgentRuntime) => agent.character.name !== ORCHESTRATOR_NAME);
       const decisions = await Promise.all(agents.map(getDecisionFromAgent));
       const finalDecision = checkDecisions(decisions);
-
+      const numberOfTrueValues = decisions.filter(decision => decision).length;
+      const roomDetails = await usersModel.findOne({ 'rooms.id': roomId }, { 'rooms.$': 1 });
+      const projectId = roomDetails.rooms.filter((room: Room) => room.active)[0].projectId;
+      if (true) approveProject(numberOfTrueValues, projectId);
       await usersModel.updateOne({ 'rooms.id': roomId }, { $set: { 'rooms.$.active': false, 'rooms.$.funded': finalDecision } });
 
       res.json({

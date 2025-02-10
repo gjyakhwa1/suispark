@@ -42,7 +42,7 @@ export class UserController {
 
   public createRoom = async (req: Request, res: Response) => {
     try {
-      const { walletAddress, abstract, teamDetails } = req.body;
+      const { walletAddress, projectId, abstract, teamDetails } = req.body;
 
       if (!walletAddress || !abstract || !teamDetails) {
         res.status(400).json({
@@ -90,6 +90,7 @@ export class UserController {
         newRoom = {
           proposal: roomParams,
           id: roomId,
+          projectId,
         };
         await usersModel.updateOne({ walletAddress }, { $push: { rooms: newRoom } });
 

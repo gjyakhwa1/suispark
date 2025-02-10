@@ -6,7 +6,7 @@ import { sharkCounterQuestionTemplate, sharkEvaluationTemplate } from '../agent/
 import charactersModel from '../models/character.model.js';
 import usersModel, { User } from '../models/user.model.js';
 import { NUMBER_OF_ROUND, ORCHESTRATOR_NAME } from '../constant.js';
-import { approveProject } from '../services/sui.service.js';
+import { approveProject, getFunds } from '../services/sui.service.js';
 import { Room } from '@models/room.model.js';
 export class AgentController {
   public createAgent = async (req: Request, res: Response) => {
@@ -322,7 +322,11 @@ export class AgentController {
       const numberOfTrueValues = decisions.filter(decision => decision).length;
       const roomDetails = await usersModel.findOne({ 'rooms.id': roomId }, { 'rooms.$': 1 });
       const projectId = roomDetails.rooms.filter((room: Room) => room.active)[0].projectId;
-      if (true) approveProject(numberOfTrueValues, projectId);
+      console.log('projectId', projectId);
+      if (true) {
+        await approveProject(2, projectId);
+        await getFunds(projectId);
+      }
       await usersModel.updateOne({ 'rooms.id': roomId }, { $set: { 'rooms.$.active': false, 'rooms.$.funded': finalDecision } });
 
       res.json({

@@ -34,10 +34,7 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const walletAddress = localStorage.getItem("walletAddress");
-    const newRoom = {
-      walletAddress,
-      ...formData,
-    };
+
     try {
       onClose();
       setLoading(true);
@@ -49,9 +46,13 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({
       const details = await getTransactionDetails(txnDigest);
       console.log("Transaction details:", details);
 
-      const projectObjectId = await extractProjectObjectId(details);
-      console.log("Extracted Project Object ID:", projectObjectId);
-
+      const projectId = await extractProjectObjectId(details);
+      console.log("Extracted Project Object ID:", projectId);
+      const newRoom = {
+        walletAddress,
+        ...formData,
+        projectId,
+      };
       let response = await axios.post("/user/createRoom", newRoom);
       if (response.status == 200) {
         const chatMessage = {

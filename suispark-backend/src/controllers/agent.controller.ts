@@ -322,9 +322,8 @@ export class AgentController {
       const numberOfTrueValues = decisions.filter(decision => decision).length;
       const roomDetails = await usersModel.findOne({ 'rooms.id': roomId }, { 'rooms.$': 1 });
       const projectId = roomDetails.rooms.filter((room: Room) => room.active)[0].projectId;
-      console.log('projectId', projectId);
-      if (true) {
-        await approveProject(2, projectId);
+      if (finalDecision) {
+        await approveProject(numberOfTrueValues, projectId);
         await getFunds(projectId);
       }
       await usersModel.updateOne({ 'rooms.id': roomId }, { $set: { 'rooms.$.active': false, 'rooms.$.funded': finalDecision } });

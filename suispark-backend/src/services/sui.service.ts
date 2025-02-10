@@ -1,7 +1,6 @@
 import { getFullnodeUrl, SuiClient } from '@mysten/sui/client';
 import { Transaction } from '@mysten/sui/transactions';
 import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
-import { Console } from 'console';
 const client = new SuiClient({ url: getFullnodeUrl('testnet') });
 
 const keypair = Ed25519Keypair.deriveKeypair(process.env.MNEMONICS);
@@ -15,7 +14,7 @@ export const approveProject = async (trueVotes: number, projectId: string) => {
     const functionName = 'approve_project';
 
     console.log('', trueVotes, projectId);
-    const target = `0x23d6ca41a20e6f3ced3bf43bc9453d0a028c2aee7da90033b9c55e1850595b97::dao_sui::approve_project`;
+    const target = '0xc2b18d566880a39a751f281d71c38bf164abe65f02ec45853a944bb8290f2aa7::dao_sui::approve_project';
     console.log('target', target);
     tx.moveCall({
       target: target,
@@ -48,7 +47,7 @@ export const getFunds = async (projectObjectId: string) => {
     const tx = new Transaction();
     // Call the get_funds function
     const functionName = 'get_funds';
-    const target = `0x23d6ca41a20e6f3ced3bf43bc9453d0a028c2aee7da90033b9c55e1850595b97::dao_sui::get_funds`;
+    const target = '0xc2b18d566880a39a751f281d71c38bf164abe65f02ec45853a944bb8290f2aa7::dao_sui::get_funds';
 
     tx.moveCall({
       target: target,

@@ -6,6 +6,7 @@ const client = new SuiClient({ url: getFullnodeUrl('testnet') });
 const keypair = Ed25519Keypair.deriveKeypair(process.env.MNEMONICS);
 const packageId = process.env.PACKAGE_ID;
 const moduleName = process.env.MODULE_NAME;
+const adminCap = process.env.ADMIN_CAP;
 
 export const approveProject = async (trueVotes: number, projectId: string) => {
   try {
@@ -14,11 +15,11 @@ export const approveProject = async (trueVotes: number, projectId: string) => {
     const functionName = 'approve_project';
 
     console.log('', trueVotes, projectId);
-    const target = packageId+"::"+moduleName+"::"+functionName;
+    const target = packageId + '::' + moduleName + '::' + functionName;
     console.log('target', target);
     tx.moveCall({
       target: target,
-      arguments: [tx.pure.u8(2), tx.object(projectId)],
+      arguments: [tx.object(adminCap), tx.pure.u8(2), tx.object(projectId)],
     });
     console.log('moveCall');
     const result = await client.signAndExecuteTransaction({
@@ -47,7 +48,7 @@ export const getFunds = async (projectObjectId: string) => {
     const tx = new Transaction();
     // Call the get_funds function
     const functionName = 'get_funds';
-    const target = packageId+"::"+moduleName+"::"+functionName;
+    const target = packageId + '::' + moduleName + '::' + functionName;
 
     tx.moveCall({
       target: target,

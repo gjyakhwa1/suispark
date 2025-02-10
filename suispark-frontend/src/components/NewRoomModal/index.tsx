@@ -2,11 +2,19 @@ import React, { useState } from "react";
 import { X } from "lucide-react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import {
+  extractProjectObjectId,
+  getBalance,
+  getTransactionDetails,
+  paySuiForSubmit,
+} from "./services";
+import { useEnokiFlow } from "@mysten/enoki/react";
+import { useLogin } from "../../context/UserContext";
 interface NewRoomModalProps {
   isOpen: boolean;
   onClose: () => void;
   getRooms: () => void;
-  setLoading: (loading:boolean)=>void;
+  setLoading: (loading: boolean) => void;
 }
 
 export const NewRoomModal: React.FC<NewRoomModalProps> = ({
@@ -19,7 +27,8 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({
     abstract: "",
     teamDetails: "",
   });
-
+  const flow = useEnokiFlow();
+  const { userDetails } = useLogin();
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,6 +41,17 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({
     try {
       onClose();
       setLoading(true);
+      const userBalance = await getBalance(userDetails.address);
+      console.log("user balance", userBalance);
+      const txnResult = await paySuiForSubmit(formData.abstract, 0.001, flow);
+      console.log("Contract transaction result:", txnResult);
+      const txnDigest = txnResult.digest;
+      const details = await getTransactionDetails(txnDigest);
+      console.log("Transaction details:", details);
+
+      const projectObjectId = await extractProjectObjectId(details);
+      console.log("Extracted Project Object ID:", projectObjectId);
+
       let response = await axios.post("/user/createRoom", newRoom);
       if (response.status == 200) {
         const chatMessage = {
@@ -39,22 +59,22 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({
           firstMessage: "true",
         };
         response = await axios.post("/agent/chat", chatMessage);
-        console.log(response)
+        console.log(response);
       }
       setLoading(false);
       setFormData({
         abstract: "",
         teamDetails: "",
       });
-      localStorage.setItem("roundFinished","0")
+      localStorage.setItem("roundFinished", "0");
       await getRooms();
-    } catch (e:any) {
+    } catch (e: any) {
       setLoading(false);
       setFormData({
         abstract: "",
         teamDetails: "",
       });
-      toast.error(e.response.data.error)
+      toast.error(e.response.data.error);
       console.log(e);
     }
   };

@@ -1,0 +1,18 @@
+{
+  "name": "RoomManager",
+  "plugins": [],
+  "clients": [],
+  "modelProvider": "openai",
+  "system": "",
+  "bio": [],
+  "lore": [],
+  "messageExamples": [],
+  "postExamples": [],
+  "adjectives": [],
+  "topics": [],
+  "style": {
+    "all": [],
+    "chat": [],
+    "post": []
+  }
+}

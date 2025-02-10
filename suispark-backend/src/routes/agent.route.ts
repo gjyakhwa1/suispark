@@ -1,0 +1,37 @@
+import { Router } from 'express';
+import { AgentController } from '../controllers/agent.controller.js';
+import { logger } from '../utils/logger.js';
+
+export interface Routes {
+  path?: string;
+  router: Router;
+}
+
+export class AgentRoute implements Routes {
+  public path = '/api/agent';
+  public router: Router;
+  public agentController = new AgentController();
+
+  constructor() {
+    this.router = Router();
+    this.initializeRoutes();
+  }
+
+  private initializeRoutes() {
+    logger.debug('Agent Route has been initialized!');
+
+    this.router.get(`${this.path}`, (req, res) => {
+      res.status(200).json({
+        message: 'Hello World!',
+      });
+    });
+    this.router.post(`${this.path}/createAgent`, this.agentController.createAgent);
+    this.router.get(`${this.path}/getAllAgents`, this.agentController.getAllAgents);
+    this.router.post(`${this.path}/restartAgent`, this.agentController.restartAgent);
+    this.router.post(`${this.path}/toggleAgent`, this.agentController.toggleAgent);
+    this.router.post(`${this.path}/updateAgentCharacter`, this.agentController.updateAgentCharacter);
+    this.router.post(`${this.path}/chat`, this.agentController.chatOrchestrator);
+    this.router.get(`${this.path}/getRoomDetails/:roomId`, this.agentController.getRoomDetails);
+    this.router.get(`${this.path}/getDecision/:roomId`, this.agentController.getProposalDecision);
+  }
+}

@@ -58,6 +58,11 @@ export class AgentController {
     }
   };
 
+  public formatAgentOutput = (message: string) => {
+    const parts = message.split('</think>');
+    return parts.length > 1 ? parts[1].trim() : message;
+  };
+
   private formatChatHistory = (chatHistory: Memory[]) =>
     chatHistory.reduce((acc, message) => acc + `${message.content.source}:${message.content.text}\n\n`, '');
 
@@ -93,14 +98,14 @@ export class AgentController {
         });
         return;
       }
-      const userRoom = await usersModel.findOne({"rooms.id":roomId},{ "rooms.$": 1 });
-      if(!userRoom){
+      const userRoom = await usersModel.findOne({ 'rooms.id': roomId }, { 'rooms.$': 1 });
+      if (!userRoom) {
         res.status(400).json({
           error: 'Invalid Request. Room id doesnot exist',
         });
         return;
       }
-      if(!userRoom.rooms[0].active){
+      if (!userRoom.rooms[0].active) {
         res.status(400).json({
           error: 'Invalid Request. Room is closed',
         });
@@ -113,7 +118,7 @@ export class AgentController {
           });
           return;
         }
-        const roomData: User = await usersModel.findOne({ 'rooms.id': roomId }, { 'rooms.$': 1 } );
+        const roomData: User = await usersModel.findOne({ 'rooms.id': roomId }, { 'rooms.$': 1 });
         message = roomData.rooms[0].proposal.abstract;
       }
 
@@ -174,12 +179,18 @@ export class AgentController {
         state,
         template: sharkCounterQuestionTemplate,
       });
-      const response = await generateText({
+      let response = await generateText({
         runtime: agentRuntime,
         context: context,
         modelClass: ModelClass.SMALL,
       });
-
+      // console.log("=======================")
+      // console.log(response);
+      // console.log("=======================")
+      response = this.formatAgentOutput(response);
+      // console.log("=======================")
+      // console.log(response)
+      // console.log("=======================")
       //save agent response to roomManager Memory
       let agentResponseMemory = {
         userId: roomManagerRuntime.agentId,
@@ -224,10 +235,10 @@ export class AgentController {
         });
         return;
       }
-      const roomDetails = await usersModel.findOne({"rooms.id":roomId},{ "rooms.$": 1 })
+      const roomDetails = await usersModel.findOne({ 'rooms.id': roomId }, { 'rooms.$': 1 });
       const chatHistory = await this.getRoomHistory(roomId);
       res.status(200).json({
-        roomDetails:roomDetails.rooms[0],
+        roomDetails: roomDetails.rooms[0],
         messages: chatHistory,
         error: null,
       });
@@ -271,15 +282,16 @@ export class AgentController {
           state,
           template: sharkEvaluationTemplate,
         });
-        const response = await generateText({
+        let response = await generateText({
           runtime: agentRuntime,
           context: context,
           modelClass: ModelClass.SMALL,
         });
-        console.log("===================")
-        console.log(agentRuntime.character.name)
-        console.log(response)
-        console.log("===================")
+        response = this.formatAgentOutput(response)
+        console.log('===================');
+        console.log(agentRuntime.character.name);
+        console.log(response);
+        console.log('===================');
         if (response.toLowerCase().includes('yes')) {
           return true;
         }

@@ -12,7 +12,7 @@ const ResultModal: React.FC<ResultModalProps> = ({
   roomId,
 }) => {
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<boolean|undefined>(undefined);
+  const [result, setResult] = useState<boolean | undefined>(undefined);
 
   const generateResult = async () => {
     try {
@@ -25,7 +25,6 @@ const ResultModal: React.FC<ResultModalProps> = ({
     }
   };
 
-  const handleTransferFund = async () => {};
   useEffect(() => {
     generateResult();
   }, []);
@@ -53,20 +52,20 @@ const ResultModal: React.FC<ResultModalProps> = ({
               Your proposal has {!result && "not"} been funded
             </div>
             <div>
-              {typeof(result)==="boolean" && result ? (
+              {typeof result === "boolean" && result ? (
                 <CircleCheck size={64} className="text-green-500" />
               ) : (
                 <CircleX size={64} className="text-red-500" />
               )}
             </div>
-            {result && (
+            {/* {result && (
               <div
                 className="px-4 py-2 text-sm text-white bg-black rounded-md hover:bg-gray-800 cursor-pointer"
                 onClick={handleTransferFund}
               >
                 Get fund
               </div>
-            )}
+            )} */}
           </div>
         )}
       </div>

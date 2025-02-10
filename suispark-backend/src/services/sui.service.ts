@@ -14,7 +14,7 @@ export const approveProject = async (trueVotes: number, projectId: string) => {
     const functionName = 'approve_project';
 
     console.log('', trueVotes, projectId);
-    const target = '0xc2b18d566880a39a751f281d71c38bf164abe65f02ec45853a944bb8290f2aa7::dao_sui::approve_project';
+    const target = packageId+"::"+moduleName+"::"+functionName;
     console.log('target', target);
     tx.moveCall({
       target: target,
@@ -47,7 +47,7 @@ export const getFunds = async (projectObjectId: string) => {
     const tx = new Transaction();
     // Call the get_funds function
     const functionName = 'get_funds';
-    const target = '0xc2b18d566880a39a751f281d71c38bf164abe65f02ec45853a944bb8290f2aa7::dao_sui::get_funds';
+    const target = packageId+"::"+moduleName+"::"+functionName;
 
     tx.moveCall({
       target: target,

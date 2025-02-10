@@ -17,12 +17,12 @@ export const Chat: React.FC = () => {
     const response = await axios.get(`/user/getRooms/${walletAddress}`);
     const _rooms = response.data.rooms;
     setRooms(_rooms);
-    const activeRoomFromDb = _rooms.find((room:any) => room.active);
+    const activeRoomFromDb = _rooms.find((room: any) => room.active);
 
     if (activeRoomFromDb) {
       setActiveRoom(activeRoomFromDb.id);
     } else {
-      if(_rooms.length>0){
+      if (_rooms.length > 0) {
         setActiveRoom(_rooms[0].id);
       }
     }
@@ -66,7 +66,7 @@ export const Chat: React.FC = () => {
         </main>
         <div className="absolute right-0 flex flex-col items-center justify-center mt-2 mr-2  bg-white shadow-md rounded-lg w-40 text-center">
           <div className="text-gray-500 text-lg font-medium">Project Fund</div>
-          <div className="text-green-600 text-2xl font-bold mt-1">$500</div>
+          <div className="text-green-600 text-2xl font-bold mt-1">0.05 SUI</div>
         </div>
 
         <NewRoomModal

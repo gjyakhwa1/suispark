@@ -187,6 +187,7 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
             >
               <div className="flex items-center w-full p-2 border border-gray-100 bg-white rounded-2xl shadow-md">
                 <textarea
+                  disabled={isThinking}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Message Agent"

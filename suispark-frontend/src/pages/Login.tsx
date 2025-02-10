@@ -17,6 +17,7 @@ export const Login: React.FC = () => {
       </div>
 
       <div className="w-1/2 flex flex-col items-center gap-10 justify-center z-10">
+        <img src="logo.png" className="h-[10rem] w-[8rem]" />
         <h2 className="mt-6 text-3xl font-semibold font-poppins text-primary">
           Welcome to SuiSpark
         </h2>

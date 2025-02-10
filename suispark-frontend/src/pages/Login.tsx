@@ -30,6 +30,8 @@ export const Login: React.FC = () => {
         <p className="text-xs text-center text-gray-500">
           By continuing, you agree to our Terms of Service and Privacy Policy
         </p>
+        <h2 className="text-xl">Supported By</h2>
+        <img src="ibriz.jpg" className="h-[6rem] w-[6rem]" />
       </div>
     </div>
   );

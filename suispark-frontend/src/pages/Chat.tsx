@@ -59,8 +59,9 @@ export const Chat: React.FC = () => {
           {activeRoom ? (
             <ChatInterface activeRoom={activeRoom} />
           ) : (
-            <div className="h-full flex items-center justify-center text-gray-500">
-              Create a room and submit your idea to fund your project
+            <div className="h-full flex flex-col items-center justify-center text-gray-500">
+              <img src="logo.png" className="h-[10rem] w-[8rem] opacity-30" />
+              <span className="mt-4 text-xl">Submit your idea to fund your project</span>
             </div>
           )}
         </main>

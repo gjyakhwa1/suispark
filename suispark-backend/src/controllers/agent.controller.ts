@@ -429,15 +429,7 @@ export class AgentController {
 
         return Array.from(trackMap.values());
       };
-      const chatHistory = await this.getRoomHistory(roomId);
 
-      if (chatHistory.length < NUMBER_OF_ROUND) {
-        res.json({
-          decision: null,
-          error: 'Rounds not completed.',
-        });
-        return;
-      }
       const agents = Array.from(global.agentsInMemory.values()).filter((agent: AgentRuntime) => agent.character.name !== ORCHESTRATOR_NAME);
       const responses = await Promise.all(agents.map(getEvaluationReportFromAgent));
       const finalDecision = checkDecisions(responses);

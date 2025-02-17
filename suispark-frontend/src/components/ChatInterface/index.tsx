@@ -136,6 +136,7 @@ export const ChatInterface = ({ activeRoom, setLoading }: { activeRoom: string, 
       setLoading(false);
       doc.save(`${title}.pdf`);
     } catch (e) {
+      setLoading(false);
       console.log(e);
     }
   };

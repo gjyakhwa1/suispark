@@ -30,7 +30,7 @@ const agents = [
   },
 ];
 
-export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
+export const ChatInterface = ({ activeRoom, setLoading }: { activeRoom: string, setLoading: (loading: boolean) => void; }) => {
   const [roomDetails, setRoomDetails] = useState<RoomDetails | null>(null);
   const [message, setMessage] = useState<string>("");
   const [selectedAgent, setSelectedAgent] = useState("");
@@ -91,6 +91,7 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
 
   const handleGenerateReport = async () => {
     try {
+      setLoading(true)
       const response = await axios.get(`/agent/generateReport/${activeRoom}`);
       const data = response.data;
       if (!data || !data.data) {
@@ -132,7 +133,7 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
         doc.text(wrappedReason, 10, y);
         y += wrappedReason.length * 6 + 10;
       });
-
+      setLoading(false);
       doc.save(`${title}.pdf`);
     } catch (e) {
       console.log(e);

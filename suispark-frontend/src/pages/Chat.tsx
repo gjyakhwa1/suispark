@@ -36,9 +36,6 @@ export const Chat: React.FC = () => {
       {loading && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex flex-col items-center justify-center z-50">
           <div className="animate-spin w-12 h-12 border-4 border-white border-t-transparent rounded-full"></div>
-          <p className="mt-4 text-white text-lg font-semibold">
-            Evaluating your idea...
-          </p>
         </div>
       )}
       <div className="h-screen flex">
@@ -57,7 +54,7 @@ export const Chat: React.FC = () => {
           }`}
         >
           {activeRoom ? (
-            <ChatInterface activeRoom={activeRoom} />
+            <ChatInterface activeRoom={activeRoom} setLoading={setLoading} />
           ) : (
             <div className="h-full flex flex-col items-center justify-center text-gray-500">
               <img src="logo.png" className="h-[10rem] w-[8rem] opacity-30" />

@@ -26,6 +26,7 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({
   const [formData, setFormData] = useState({
     abstract: "",
     teamDetails: "",
+    demoLink:"",
   });
   const flow = useEnokiFlow();
   const { userDetails } = useLogin();
@@ -66,6 +67,7 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({
       setFormData({
         abstract: "",
         teamDetails: "",
+        demoLink:"",
       });
       localStorage.setItem("roundFinished", "0");
       await getRooms();
@@ -74,6 +76,7 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({
       setFormData({
         abstract: "",
         teamDetails: "",
+        demoLink:"",
       });
       toast.error(e.response.data.error);
       console.log(e);
@@ -117,6 +120,19 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({
               value={formData.teamDetails}
               onChange={(e) =>
                 setFormData({ ...formData, teamDetails: e.target.value })
+              }
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Demo Video (Youtube Link)
+            </label>
+            <input
+              className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2"
+              value={formData.demoLink}
+              onChange={(e) =>
+                setFormData({ ...formData, demoLink: e.target.value })
               }
               required
             />

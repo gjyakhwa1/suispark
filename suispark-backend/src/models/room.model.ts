@@ -3,7 +3,8 @@ import { Schema } from 'mongoose';
 interface Proposal {
   abstract: string;
   teamDetails: string;
-  timeLine: string;
+  demoLink: string;
+  demoVideoTranscript:string;
 }
 export interface Room {
   id: string;
@@ -23,10 +24,14 @@ const ProposalSchema: Schema<Proposal> = new Schema(
       type: String,
       required: true,
     },
-    timeLine: {
+    demoLink: {
       type: String,
-      required: true,
+      required: true
     },
+    demoVideoTranscript:{
+      type: String,
+      default: ""
+    }
   },
   { _id: false },
 );

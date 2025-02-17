@@ -3,6 +3,7 @@ import usersModel from '../models/user.model.js';
 import { Room } from '../models/room.model.js';
 import { AgentRuntime, embed } from '@elizaos/core';
 import { ORCHESTRATOR_NAME, PROPOSAL_SIMILARITY_THRESHOLD } from '../constant.js';
+import { getYoutubeVideoTranscript } from '../services/youtubeTranscript.service.js';
 
 export class UserController {
   public createUser = async (req: Request, res: Response) => {
@@ -42,11 +43,11 @@ export class UserController {
 
   public createRoom = async (req: Request, res: Response) => {
     try {
-      const { walletAddress, projectId, abstract, teamDetails } = req.body;
+      const { walletAddress, projectId, abstract, teamDetails, demoLink } = req.body;
 
-      if (!walletAddress || !abstract || !teamDetails) {
+      if (!walletAddress || !abstract || !teamDetails || !demoLink) {
         res.status(400).json({
-          error: 'Invalid request!. Please include walletAddress, abstract and teamDetails',
+          error: 'Invalid request!. Please include walletAddress, abstract, demoLink and teamDetails',
         });
         return;
       }
@@ -65,6 +66,8 @@ export class UserController {
         });
         return;
       }
+
+      const demoVideoTranscript = await getYoutubeVideoTranscript(demoLink);
       const roomManagerRuntime = Array.from(global.agentsInMemory.values()).filter(
         (agent: AgentRuntime) => agent.character.name === ORCHESTRATOR_NAME,
       )[0] as AgentRuntime;
@@ -86,7 +89,7 @@ export class UserController {
       let newRoom = null;
       const roomId = await global.db.createRoom();
       try {
-        const roomParams = { abstract, teamDetails };
+        const roomParams = { abstract, teamDetails, demoLink, demoVideoTranscript };
         newRoom = {
           proposal: roomParams,
           id: roomId,

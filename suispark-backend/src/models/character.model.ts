@@ -4,6 +4,7 @@ import { Character } from '@elizaos/core';
 export interface CharacterExt extends Character {
   agentId: string;
   status: 'on' | 'off';
+  evaluationCriteria: string[];
 }
 
 const updatedCharacterSchema: Schema<CharacterExt> = new Schema(
@@ -81,6 +82,10 @@ const updatedCharacterSchema: Schema<CharacterExt> = new Schema(
       type: [String],
       default: [],
     },
+    evaluationCriteria:{
+      type:[String],
+      default:[]
+    }
   },
   {
     timestamps: true,

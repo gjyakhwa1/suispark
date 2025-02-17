@@ -88,6 +88,15 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
     setDisplayModal(true);
   };
 
+  const handleGenerateReport = async ()=>{
+    try {
+      const response = await axios.get(`/agent/generateReport/${activeRoom}`);
+      console.log(response)
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
   useEffect(() => {
     getRoomDetails();
   }, [activeRoom, displayModal]);
@@ -213,6 +222,12 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
                 onClick={handleDisplayResult}
               >
                 View Result
+              </div>
+              <div
+                className="hover:cursor-pointer hover:bg-gray-800 border border-black p-2 rounded-lg bg-black text-white"
+                onClick={handleGenerateReport}
+              >
+                Generate Report
               </div>
             </div>
           )

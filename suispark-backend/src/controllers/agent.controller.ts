@@ -2,7 +2,7 @@ import { AgentRuntime, composeContext, Content, generateText, Memory, ModelClass
 import { Request, Response } from 'express';
 import { logger } from '../utils/logger.js';
 import { startAgent } from '../agent/agent.js';
-import { sharkCounterQuestionTemplate, sharkEvaluationTemplate } from '../agent/constant.js';
+import { sharkCounterQuestionTemplate, sharkEvaluationTemplate, sharkDetailEvaluationTemplate } from '../agent/constant.js';
 import charactersModel from '../models/character.model.js';
 import usersModel, { User } from '../models/user.model.js';
 import { NUMBER_OF_ROUND, ORCHESTRATOR_NAME } from '../constant.js';
@@ -274,15 +274,18 @@ export class AgentController {
         )[0] as AgentRuntime;
         await global.db.addParticipant(roomManagerRuntime.agentId, roomId);
         const chatHistory = await roomManagerRuntime.messageManager.getMemoriesByRoomIds({ roomIds: [roomId] });
-        const knowledge = agentRuntime.character.knowledge.sort(()=>Math.random()-0.5).slice(0,5).join(", ");
+        const knowledge = agentRuntime.character.knowledge
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 5)
+          .join(', ');
         const state = await agentRuntime.composeState(queryMemory, {
-          chatHistory: this.formatChatHistory(chatHistory), knowledge: knowledge
+          chatHistory: this.formatChatHistory(chatHistory),
+          knowledge: knowledge,
         });
         let context = composeContext({
           state,
           template: sharkEvaluationTemplate,
         });
-        console.log(context)
         let response = await generateText({
           runtime: agentRuntime,
           context: context,
@@ -334,6 +337,112 @@ export class AgentController {
       });
     } catch (error) {
       res.status(200).json({ message: '', error: 'Error chatting orchestrator ' + error.toString() });
+    }
+  };
+
+  public generateEvaluationReport = async (req: Request, res: Response) => {
+    try {
+      const roomId = req.params.roomId as `${string}-${string}-${string}-${string}-${string}`;
+
+      if (!roomId) {
+        res.status(400).json({
+          error: 'Invalid Request.',
+        });
+        return;
+      }
+
+      const extractJson = message => {
+        const parts = message.split('```json');
+        return parts.length > 1 ? parts[1].split('```')[0].trim() : message;
+      };
+
+      const getEvaluationReportFromAgent = async (agentRuntime: AgentRuntime) => {
+        let queryMemory: Memory = {
+          userId: agentRuntime.agentId,
+          agentId: agentRuntime.agentId,
+          roomId: roomId,
+          content: {
+            source: '',
+            text: '',
+          } as Content,
+        };
+        const roomManagerRuntime = Array.from(global.agentsInMemory.values()).filter(
+          (agent: AgentRuntime) => agent.character.name === ORCHESTRATOR_NAME,
+        )[0] as AgentRuntime;
+        await global.db.addParticipant(roomManagerRuntime.agentId, roomId);
+        const chatHistory = await roomManagerRuntime.messageManager.getMemoriesByRoomIds({ roomIds: [roomId] });
+        const knowledge = agentRuntime.character.knowledge
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 5)
+          .join(', ');
+        const character = (await charactersModel.findOne({ agentId: agentRuntime.agentId })).toObject();
+        const evaluationCriteria = character.evaluationCriteria.reduce((acc, message) => acc + `${message}\n`, '');
+        const state = await agentRuntime.composeState(queryMemory, {
+          chatHistory: this.formatChatHistory(chatHistory),
+          knowledge: knowledge,
+          evaluationCriteria: evaluationCriteria,
+        });
+        let context = composeContext({
+          state,
+          template: sharkDetailEvaluationTemplate,
+        });
+        let response = await generateText({
+          runtime: agentRuntime,
+          context: context,
+          modelClass: ModelClass.SMALL,
+        });
+        console.log('===================');
+        console.log(agentRuntime.character.name);
+        console.log(response);
+        console.log('===================');
+        response = this.formatAgentOutput(response);
+        response = JSON.parse(extractJson(response));
+        response['name'] = agentRuntime.character.name;
+        return response;
+      };
+
+      const checkDecisions = (responses: any): boolean => {
+        const numberOfTrueValues = responses.filter(response => response.decision.toLowerCase() === 'yes').length;
+        if (numberOfTrueValues / responses.length > 0.5) {
+          return true;
+        }
+        return false;
+      };
+      const extractTracks = (responses: any[]) => {
+        const trackSet = new Set<string>();
+
+        responses.forEach(item => {
+          if (Array.isArray(item.tracks)) {
+            item.tracks.forEach(track => {
+              if (typeof track === 'string') {
+                trackSet.add(track.trim().toLowerCase());
+              }
+            });
+          }
+        });
+
+        return Array.from(trackSet);
+      };
+      const chatHistory = await this.getRoomHistory(roomId);
+
+      if (chatHistory.length < NUMBER_OF_ROUND) {
+        res.json({
+          decision: null,
+          error: 'Rounds not completed.',
+        });
+        return;
+      }
+      const agents = Array.from(global.agentsInMemory.values()).filter((agent: AgentRuntime) => agent.character.name !== ORCHESTRATOR_NAME);
+      const responses = await Promise.all(agents.map(getEvaluationReportFromAgent));
+      const finalDecision = checkDecisions(responses);
+      const tracks = extractTracks(responses);
+      const finalResponse = responses.map((response: any) => ({ decision: response.decision, reason: response.reason, name: response.name }));
+      res.json({
+        data: { responses: finalResponse, overallDecision: finalDecision, tracks: tracks },
+        error: null,
+      });
+    } catch (error) {
+      res.status(200).json({ message: '', error: 'Error generating report ' + error.toString() });
     }
   };
 

@@ -33,5 +33,6 @@ export class AgentRoute implements Routes {
     this.router.post(`${this.path}/chat`, this.agentController.chatOrchestrator);
     this.router.get(`${this.path}/getRoomDetails/:roomId`, this.agentController.getRoomDetails);
     this.router.get(`${this.path}/getDecision/:roomId`, this.agentController.getProposalDecision);
+    this.router.get(`${this.path}/generateReport/:roomId`, this.agentController.generateEvaluationReport)
   }
 }

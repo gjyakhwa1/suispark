@@ -355,6 +355,8 @@ export class AgentController {
         const parts = message.split('```json');
         return parts.length > 1 ? parts[1].split('```')[0].trim() : message;
       };
+      
+      const roomData: User = await usersModel.findOne({ 'rooms.id': roomId }, { 'rooms.$': 1 });
 
       const getEvaluationReportFromAgent = async (agentRuntime: AgentRuntime) => {
         let queryMemory: Memory = {
@@ -370,17 +372,18 @@ export class AgentController {
           (agent: AgentRuntime) => agent.character.name === ORCHESTRATOR_NAME,
         )[0] as AgentRuntime;
         await global.db.addParticipant(roomManagerRuntime.agentId, roomId);
-        const chatHistory = await roomManagerRuntime.messageManager.getMemoriesByRoomIds({ roomIds: [roomId] });
         const knowledge = agentRuntime.character.knowledge
           .sort(() => Math.random() - 0.5)
           .slice(0, 5)
           .join(', ');
         const character = (await charactersModel.findOne({ agentId: agentRuntime.agentId })).toObject();
+
         const evaluationCriteria = character.evaluationCriteria.reduce((acc, message) => acc + `${message}\n`, '');
         const state = await agentRuntime.composeState(queryMemory, {
-          chatHistory: this.formatChatHistory(chatHistory),
           knowledge: knowledge,
           evaluationCriteria: evaluationCriteria,
+          proposalAbstract:roomData.rooms[0].proposal.abstract,
+          youtubeDemoVideoTranscript:roomData.rooms[0].proposal.demoVideoTranscript
         });
         let context = composeContext({
           state,

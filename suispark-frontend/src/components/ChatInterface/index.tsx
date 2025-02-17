@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { ArrowUp, CircleCheck, CircleX } from "lucide-react";
 import axios from "axios";
 import ResultModal from "../ResultModal";
+import { jsPDF } from "jspdf";
 
 interface RoomDetails {
   active: boolean;
@@ -88,14 +89,55 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
     setDisplayModal(true);
   };
 
-  const handleGenerateReport = async ()=>{
+  const handleGenerateReport = async () => {
     try {
       const response = await axios.get(`/agent/generateReport/${activeRoom}`);
-      console.log(response)
+      const data = response.data;
+      if (!data || !data.data) {
+        console.error("Invalid response format");
+        return;
+      }
+
+      const { responses, overallDecision, tracks } = data.data;
+
+      const doc = new jsPDF();
+      let y = 10;
+
+      doc.setFontSize(16);
+      doc.text("Project Report", 10, y);
+      y += 10;
+
+      doc.setFontSize(12);
+      doc.text(`Tracks: ${tracks.join(", ")}`, 10, y);
+      y += 10;
+
+      doc.text(`Overall Decision: ${overallDecision ? "YES" : "NO"}`, 10, y);
+      y += 10;
+
+      responses.forEach(({ name, decision, reason }: any) => {
+        if (y > 270) {
+          doc.addPage();
+          y = 10;
+        }
+
+        doc.setFontSize(14);
+        doc.text(`${name}`, 10, y);
+        y += 8;
+
+        doc.setFontSize(12);
+        doc.text(`Decision: ${decision}`, 10, y);
+        y += 6;
+
+        const wrappedReason = doc.splitTextToSize(`Reason: ${reason}`, 180);
+        doc.text(wrappedReason, 10, y);
+        y += wrappedReason.length * 6 + 10;
+      });
+
+      doc.save("report.pdf");
     } catch (e) {
       console.log(e);
     }
-  }
+  };
 
   useEffect(() => {
     getRoomDetails();
@@ -133,6 +175,14 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
               <div>{agent.name}</div>
             </div>
           ))}
+          <div className="flex flex-col justify-center items-center">
+            <div
+              className="hover:cursor-pointer hover:bg-gray-800 border border-black p-2 rounded-lg bg-black text-white"
+              onClick={handleGenerateReport}
+            >
+              Generate Report
+            </div>
+          </div>
         </div>
         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
           {roomDetails &&
@@ -222,12 +272,6 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
                 onClick={handleDisplayResult}
               >
                 View Result
-              </div>
-              <div
-                className="hover:cursor-pointer hover:bg-gray-800 border border-black p-2 rounded-lg bg-black text-white"
-                onClick={handleGenerateReport}
-              >
-                Generate Report
               </div>
             </div>
           )

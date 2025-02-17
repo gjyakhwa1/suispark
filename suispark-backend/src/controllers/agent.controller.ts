@@ -274,15 +274,15 @@ export class AgentController {
         )[0] as AgentRuntime;
         await global.db.addParticipant(roomManagerRuntime.agentId, roomId);
         const chatHistory = await roomManagerRuntime.messageManager.getMemoriesByRoomIds({ roomIds: [roomId] });
-
+        const knowledge = agentRuntime.character.knowledge.sort(()=>Math.random()-0.5).slice(0,5).join(", ");
         const state = await agentRuntime.composeState(queryMemory, {
-          chatHistory: this.formatChatHistory(chatHistory),
+          chatHistory: this.formatChatHistory(chatHistory), knowledge: knowledge
         });
-
         let context = composeContext({
           state,
           template: sharkEvaluationTemplate,
         });
+        console.log(context)
         let response = await generateText({
           runtime: agentRuntime,
           context: context,

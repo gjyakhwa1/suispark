@@ -43,11 +43,11 @@ export class UserController {
 
   public createRoom = async (req: Request, res: Response) => {
     try {
-      const { walletAddress, projectId, abstract, teamDetails, demoLink } = req.body;
+      const { walletAddress, projectId, abstract, title, demoLink } = req.body;
 
-      if (!walletAddress || !abstract || !teamDetails || !demoLink) {
+      if (!walletAddress || !abstract || !title || !demoLink) {
         res.status(400).json({
-          error: 'Invalid request!. Please include walletAddress, abstract, demoLink and teamDetails',
+          error: 'Invalid request!. Please include walletAddress, abstract, demoLink and title',
         });
         return;
       }
@@ -89,7 +89,7 @@ export class UserController {
       let newRoom = null;
       const roomId = await global.db.createRoom();
       try {
-        const roomParams = { abstract, teamDetails, demoLink, demoVideoTranscript };
+        const roomParams = { abstract, title, demoLink, demoVideoTranscript };
         newRoom = {
           proposal: roomParams,
           id: roomId,
@@ -102,6 +102,7 @@ export class UserController {
         res.status(200).json({ room: null, error: 'Error creating room ' + error.toString() });
       }
     } catch (e) {
+      console.log(e)
       res.status(500).json({
         error: e.message,
       });

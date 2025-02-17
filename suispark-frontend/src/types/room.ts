@@ -1,7 +1,7 @@
 export interface Room {
     id: string;
     abstract: string;
-    teamDetails: string;
+    title: string;
     timeline: string;
     createdAt: Date;
   }

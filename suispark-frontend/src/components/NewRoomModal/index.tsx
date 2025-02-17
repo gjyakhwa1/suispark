@@ -25,7 +25,7 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({
 }) => {
   const [formData, setFormData] = useState({
     abstract: "",
-    teamDetails: "",
+    title: "",
     demoLink:"",
   });
   const flow = useEnokiFlow();
@@ -66,7 +66,7 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({
       setLoading(false);
       setFormData({
         abstract: "",
-        teamDetails: "",
+        title: "",
         demoLink:"",
       });
       localStorage.setItem("roundFinished", "0");
@@ -75,7 +75,7 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({
       setLoading(false);
       setFormData({
         abstract: "",
-        teamDetails: "",
+        title: "",
         demoLink:"",
       });
       toast.error(e.response.data.error);
@@ -112,14 +112,14 @@ export const NewRoomModal: React.FC<NewRoomModalProps> = ({
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Team Details
+              Project Title
             </label>
             <textarea
               className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2"
               rows={4}
-              value={formData.teamDetails}
+              value={formData.title}
               onChange={(e) =>
-                setFormData({ ...formData, teamDetails: e.target.value })
+                setFormData({ ...formData, title: e.target.value })
               }
               required
             />

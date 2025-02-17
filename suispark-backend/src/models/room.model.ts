@@ -2,7 +2,7 @@ import { Schema } from 'mongoose';
 
 interface Proposal {
   abstract: string;
-  teamDetails: string;
+  title: string;
   demoLink: string;
   demoVideoTranscript:string;
 }
@@ -20,7 +20,7 @@ const ProposalSchema: Schema<Proposal> = new Schema(
       type: String,
       required: true,
     },
-    teamDetails: {
+    title: {
       type: String,
       required: true,
     },

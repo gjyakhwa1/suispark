@@ -10,7 +10,7 @@ interface RoomDetails {
   id: string;
   proposal: {
     abstract: string;
-    teamDetails: string;
+    title: string;
   };
   messages: { source: string; text: string }[];
 }
@@ -98,13 +98,13 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
         return;
       }
 
-      const { responses, overallDecision, tracks } = data.data;
+      const { responses, overallDecision, tracks, title } = data.data;
 
       const doc = new jsPDF();
       let y = 10;
 
       doc.setFontSize(16);
-      doc.text("Project Report", 10, y);
+      doc.text(`Project: ${title}`, 10, y);
       y += 10;
 
       doc.setFontSize(12);
@@ -133,7 +133,7 @@ export const ChatInterface = ({ activeRoom }: { activeRoom: string }) => {
         y += wrappedReason.length * 6 + 10;
       });
 
-      doc.save("report.pdf");
+      doc.save(`${title}.pdf`);
     } catch (e) {
       console.log(e);
     }

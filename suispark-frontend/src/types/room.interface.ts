@@ -4,6 +4,6 @@ export default interface IRoom {
   funded: boolean;
   proposal: {
     abstract: string;
-    teamDetails: string;
+    title: string;
   };
 }

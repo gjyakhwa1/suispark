@@ -382,8 +382,8 @@ export class AgentController {
         const state = await agentRuntime.composeState(queryMemory, {
           knowledge: knowledge,
           evaluationCriteria: evaluationCriteria,
-          proposalAbstract:roomData.rooms[0].proposal.abstract,
-          youtubeDemoVideoTranscript:roomData.rooms[0].proposal.demoVideoTranscript
+          proposalAbstract: roomData.rooms[0].proposal.abstract,
+          youtubeDemoVideoTranscript: roomData.rooms[0].proposal.demoVideoTranscript,
         });
         let context = composeContext({
           state,
@@ -412,19 +412,22 @@ export class AgentController {
         return false;
       };
       const extractTracks = (responses: any[]) => {
-        const trackSet = new Set<string>();
+        const trackMap = new Map<string, string>();
 
         responses.forEach(item => {
           if (Array.isArray(item.tracks)) {
             item.tracks.forEach(track => {
               if (typeof track === 'string') {
-                trackSet.add(track.trim().toLowerCase());
+                const lowerCaseTrack = track.trim().toLowerCase();
+                if (!trackMap.has(lowerCaseTrack)) {
+                  trackMap.set(lowerCaseTrack, track.trim());
+                }
               }
             });
           }
         });
 
-        return Array.from(trackSet);
+        return Array.from(trackMap.values());
       };
       const chatHistory = await this.getRoomHistory(roomId);
 
@@ -441,7 +444,7 @@ export class AgentController {
       const tracks = extractTracks(responses);
       const finalResponse = responses.map((response: any) => ({ decision: response.decision, reason: response.reason, name: response.name }));
       res.json({
-        data: { responses: finalResponse, overallDecision: finalDecision, tracks: tracks },
+        data: { responses: finalResponse, overallDecision: finalDecision, tracks: tracks, title: roomData.rooms[0].proposal.title },
         error: null,
       });
     } catch (error) {

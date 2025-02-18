@@ -436,7 +436,13 @@ export class AgentController {
       const tracks = extractTracks(responses);
       const finalResponse = responses.map((response: any) => ({ decision: response.decision, reason: response.reason, name: response.name }));
       res.json({
-        data: { responses: finalResponse, overallDecision: finalDecision, tracks: tracks, title: roomData.rooms[0].proposal.title },
+        data: {
+          responses: finalResponse,
+          overallDecision: finalDecision,
+          tracks: tracks,
+          title: roomData.rooms[0].proposal.title,
+          demoVideo: roomData.rooms[0].proposal.demoLink
+        },
         error: null,
       });
     } catch (error) {

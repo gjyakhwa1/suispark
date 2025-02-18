@@ -30,7 +30,13 @@ const agents = [
   },
 ];
 
-export const ChatInterface = ({ activeRoom, setLoading }: { activeRoom: string, setLoading: (loading: boolean) => void; }) => {
+export const ChatInterface = ({
+  activeRoom,
+  setLoading,
+}: {
+  activeRoom: string;
+  setLoading: (loading: boolean) => void;
+}) => {
   const [roomDetails, setRoomDetails] = useState<RoomDetails | null>(null);
   const [message, setMessage] = useState<string>("");
   const [selectedAgent, setSelectedAgent] = useState("");
@@ -91,7 +97,7 @@ export const ChatInterface = ({ activeRoom, setLoading }: { activeRoom: string, 
 
   const handleGenerateReport = async () => {
     try {
-      setLoading(true)
+      setLoading(true);
       const response = await axios.get(`/agent/generateReport/${activeRoom}`);
       const data = response.data;
       if (!data || !data.data) {
@@ -99,7 +105,8 @@ export const ChatInterface = ({ activeRoom, setLoading }: { activeRoom: string, 
         return;
       }
 
-      const { responses, overallDecision, tracks, title } = data.data;
+      const { responses, overallDecision, tracks, title, demoVideo } =
+        data.data;
 
       const doc = new jsPDF();
       let y = 10;
@@ -113,6 +120,14 @@ export const ChatInterface = ({ activeRoom, setLoading }: { activeRoom: string, 
       y += 10;
 
       doc.text(`Overall Decision: ${overallDecision ? "YES" : "NO"}`, 10, y);
+      y += 10;
+
+      doc.setFontSize(14);
+      doc.text(`Demo Video:`, 10, y);
+      y += 8;
+      doc.setTextColor(0, 0, 255);
+      doc.textWithLink(demoVideo, 10, y, { url: demoVideo });
+      doc.setTextColor(0, 0, 0);
       y += 10;
 
       responses.forEach(({ name, decision, reason }: any) => {
@@ -129,10 +144,16 @@ export const ChatInterface = ({ activeRoom, setLoading }: { activeRoom: string, 
         doc.text(`Decision: ${decision}`, 10, y);
         y += 6;
 
-        const wrappedReason = doc.splitTextToSize(`Reason: ${reason}`, 180);
+        doc.setFontSize(12);
+        doc.text(`Reason`, 10, y);
+        y += 6;
+
+        doc.setFontSize(12);
+        const wrappedReason = doc.splitTextToSize(reason, 180);
         doc.text(wrappedReason, 10, y);
         y += wrappedReason.length * 6 + 10;
       });
+
       setLoading(false);
       doc.save(`${title}.pdf`);
     } catch (e) {

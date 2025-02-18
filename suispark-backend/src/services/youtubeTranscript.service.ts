@@ -6,8 +6,10 @@ export const getYoutubeVideoTranscript = async videoLink => {
       const transcriptText = transcript.map(e => e.text).join(' ');
       return transcriptText;
     }
-    throw "Couldnot fetch video";
+    console.log('Not a youtube link');
+    return '';
   } catch (e) {
-    throw 'Couldnot fetch video';
+    console.log('could not transcribe the youtube video');
+    return '';
   }
 };

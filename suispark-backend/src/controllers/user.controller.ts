@@ -59,13 +59,13 @@ export class UserController {
         });
         return;
       }
-      const hasActiveRoom = existingUser.rooms.some((room: Room) => room.active);
-      if (hasActiveRoom) {
-        res.status(400).json({
-          error: `User with wallet address ${walletAddress}  already has an active room.`,
-        });
-        return;
-      }
+      // const hasActiveRoom = existingUser.rooms.some((room: Room) => room.active);
+      // if (hasActiveRoom) {
+      //   res.status(400).json({
+      //     error: `User with wallet address ${walletAddress}  already has an active room.`,
+      //   });
+      //   return;
+      // }
 
       const demoVideoTranscript = await getYoutubeVideoTranscript(demoLink);
       const roomManagerRuntime = Array.from(global.agentsInMemory.values()).filter(

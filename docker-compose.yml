@@ -1,0 +1,24 @@
+services:
+  backend:
+    build:
+      context: ./suispark-backend
+    container_name: suispark-be
+    ports:
+      - "8000:6969"
+    volumes:
+      - ~/sui-ai-hackathon/db.sqlite:/suispark-backend/src/data/db.sqlite
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./suispark-frontend
+    container_name: suispark-fe
+    ports:
+      - "5005:3000"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
